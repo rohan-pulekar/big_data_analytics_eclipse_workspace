@@ -1,0 +1,95 @@
+package e63.course.assignment4;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFunction;
+
+import scala.Tuple2;
+
+// This program is for the Assignment4 Problem4 statement:  If you are an experienced programmer add to the bigram count ...
+public class Assignment4_Problem4_Advanced {
+	public static void main(String[] args) throws Exception {
+
+		// set input and out files/dirs
+		String inputFile = args[0];
+		String outputFile = args[1];
+		
+		// Create a Java Spark Context.
+		SparkConf sparkConf = new SparkConf().setAppName("Assignment4_Problem4_Advanced");
+
+		// Create a Java Spark Context
+		JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
+
+		// Load our input data.
+		JavaPairRDD<String, String> input = sparkContext.wholeTextFiles(inputFile);
+		JavaRDD<String> words = input.flatMap(new FlatMapFunction<Tuple2<String, String>, String>() {
+
+			private static final long serialVersionUID = 1L;
+
+			public Iterable<String> call(Tuple2<String, String> tuple) {
+				StringTokenizer itr = new StringTokenizer(tuple._2, ".");
+				List<String> listOfBigrams = new ArrayList<String>();
+				while (itr.hasMoreTokens()) {
+					listOfBigrams.addAll(getBigrams(itr.nextToken()));
+				}
+				return listOfBigrams;
+			}
+		});
+
+		// Transform into word and count.
+		JavaPairRDD<String, Integer> counts = words.mapToPair(new PairFunction<String, String, Integer>() {
+
+			private static final long serialVersionUID = 1L;
+
+			public Tuple2<String, Integer> call(String x) {
+				return new Tuple2<String, Integer>(x, 1);
+			}
+		}).reduceByKey(new Function2<Integer, Integer, Integer>() {
+
+			private static final long serialVersionUID = 1L;
+
+			public Integer call(Integer x, Integer y) {
+				return x + y;
+			}
+		}).sortByKey();
+
+		counts.saveAsTextFile(outputFile);
+		sparkContext.close();
+	}
+
+	public static List<String> getBigrams(String sentence) {
+		StringTokenizer tokenizer = new StringTokenizer(sentence);
+		int numberOfWordsInSentence = tokenizer.countTokens();
+		if (numberOfWordsInSentence < 2) {
+			return new ArrayList<String>(0);
+		}
+
+		List<String> wordsInSentence = new ArrayList<String>(numberOfWordsInSentence);
+		while (tokenizer.hasMoreTokens()) {
+			wordsInSentence.add(tokenizer.nextToken());
+		}
+
+		List<String> bigrams = new ArrayList<String>(numberOfWordsInSentence - 1);
+		for (int wordCounter = 0; wordCounter < numberOfWordsInSentence - 1; wordCounter++) {
+			String firstWord = wordsInSentence.get(wordCounter);
+			if (firstWord.endsWith(".")) {
+				continue;
+			}
+			firstWord = firstWord.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+			String secondWord = wordsInSentence.get(wordCounter + 1).replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+			if (firstWord.isEmpty() || secondWord.isEmpty()) {
+				continue;
+			}
+			bigrams.add(firstWord + " " + secondWord);
+		}
+		return bigrams;
+	}
+}

@@ -1,0 +1,29 @@
+1455525943593	Rename type 'WordCount'
+1455525951032	Copy compilation unit
+1455525963804	Rename type 'WordCountOriginal2'
+1455527665638	Delete element
+1455548103673	Rename type 'WordCount'
+1455550873512	Rename type 'WordCount2'
+1455553897998	Rename type 'WordCountModifiedProblem1'
+1455554055880	Copy compilation unit
+1455555146824	Rename local variable 'listOfTokens'
+1455563519874	Rename type 'IntSumReducer'
+1455586730344	Rename type 'DummyReducer'
+1455587129294	Rename type 'Assignment3_Problem2'
+1455587270261	Rename type 'Assignment3_Problem21'
+1455603476700	Copy compilation unit
+1455674842603	Rename type 'TokenizerMapper'
+1455674863702	Rename type 'IntSumReducer'
+1455674896271	Rename type 'WordCountModifiedForProblem1'
+1455678257208	Rename local variable 'job'
+1455678945323	Rename local variable 'problem2Job'
+1455679032569	Rename local variable 'in'
+1455679040119	Rename local variable 'in'
+1455687001847	Rename type 'Assignment3_problem5InverterNewAPI'
+1455687646876	Rename type 'Assignment3_Problem5InverterNewAPI'
+1455688123853	Rename package 'org.apache.hadoop.examples'
+1455688625545	Rename package 'hadoop.assignment3'
+1455771271141	Rename package 'bigdataanalytics.course.assignment3'
+1455772822393	Rename type 'Problem1Reducer'
+1455773055610	Rename type 'Problem1Mapper'
+1455856777315	Delete element

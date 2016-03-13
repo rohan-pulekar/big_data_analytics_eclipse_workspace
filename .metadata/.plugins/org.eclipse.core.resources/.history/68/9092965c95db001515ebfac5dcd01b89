@@ -1,0 +1,99 @@
+package e63.course.assignment4;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.api.java.function.FlatMapFunction;
+import org.apache.spark.api.java.function.Function2;
+import org.apache.spark.api.java.function.PairFunction;
+
+import scala.Tuple2;
+
+public class Assignment4_Problem4_Advanced_WordHeaven {
+	public static void main(String[] args) throws Exception {
+		String inputFileName = args[0];
+		String outputFileDir = args[1];
+		// Create a Java Spark Context.
+		SparkConf sparkConf = new SparkConf().setAppName("Assignment4_Problem4_Advanced_WordHeaven");
+		JavaSparkContext javaSparkContext = new JavaSparkContext(sparkConf);
+
+		// Load our input data.
+		JavaPairRDD<String, String> inputFileContents = javaSparkContext.wholeTextFiles(inputFileName);
+		JavaRDD<String> bigramsListRDD = inputFileContents
+				.flatMap(new FlatMapFunction<Tuple2<String, String>, String>() {
+
+					private static final long serialVersionUID = 1L;
+
+					public Iterable<String> call(Tuple2<String, String> tuple) {
+						StringTokenizer tokenizer = new StringTokenizer(tuple._2, ".");
+						List<String> bigramsListTemp = new ArrayList<String>();
+						while (tokenizer.hasMoreTokens()) {
+							// will be executed for each sentence
+							bigramsListTemp.addAll(getBigrams(tokenizer.nextToken()));
+						}
+						return bigramsListTemp;
+					}
+				});
+
+		// Transform into word and count.
+		JavaPairRDD<String, Integer> bigramsAndDefaultCount = bigramsListRDD
+				.mapToPair(new PairFunction<String, String, Integer>() {
+
+					private static final long serialVersionUID = 1L;
+
+					public Tuple2<String, Integer> call(String bigram) {
+						return new Tuple2<String, Integer>(bigram, 1);
+					}
+				});
+
+		// filter the bigrams to include only those that contain word heaven
+		JavaPairRDD<String, Integer> filteredBigramsAndDefaultCount = bigramsAndDefaultCount
+				.filter((Tuple2<String, Integer> tuple) -> (tuple._1 != null && tuple._1.contains("heaven")));
+		JavaPairRDD<String, Integer> bigramsAndFinalCount = filteredBigramsAndDefaultCount
+				.reduceByKey(new Function2<Integer, Integer, Integer>() {
+
+					private static final long serialVersionUID = 1L;
+
+					public Integer call(Integer x, Integer y) {
+						return x + y;
+					}
+				});
+		JavaPairRDD<String, Integer> sortedBigramsAndCount = bigramsAndFinalCount.sortByKey();
+
+		sortedBigramsAndCount.saveAsTextFile(outputFileDir);
+		javaSparkContext.close();
+	}
+
+	public static List<String> getBigrams(String sentence) {
+		StringTokenizer tokenizer = new StringTokenizer(sentence);
+		int numberOfWordsInSentence = tokenizer.countTokens();
+		if (numberOfWordsInSentence < 2) {
+			return new ArrayList<String>(0);
+		}
+
+		List<String> wordsInSentence = new ArrayList<String>(numberOfWordsInSentence);
+		while (tokenizer.hasMoreTokens()) {
+			wordsInSentence.add(tokenizer.nextToken());
+		}
+
+		List<String> bigrams = new ArrayList<String>(numberOfWordsInSentence - 1);
+		for (int wordCounter = 0; wordCounter < numberOfWordsInSentence - 1; wordCounter++) {
+			String firstWord = wordsInSentence.get(wordCounter);
+			if (firstWord.endsWith(".")) {
+				continue;
+			}
+			firstWord = firstWord.replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+			String secondWord = wordsInSentence.get(wordCounter + 1).replaceAll("[^A-Za-z0-9]", "").toLowerCase();
+			if (firstWord.isEmpty() || secondWord.isEmpty()) {
+				continue;
+			}
+			bigrams.add(firstWord + " " + secondWord);
+		}
+		return bigrams;
+	}
+}

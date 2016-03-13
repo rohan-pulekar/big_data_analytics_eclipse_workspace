@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.m2e.core.pom.dependencies">
+	</section>
+	<section name="org.eclipse.m2e.core.pom.overview">
+		<list key="ciManagementUrl">
+		</list>
+		<list key="ciManagementSystem">
+		</list>
+		<list key="issueManagementSystem">
+		</list>
+		<list key="issueManagementUrl">
+		</list>
+	</section>
+	<section name="MavenProjectImportWizardPage">
+		<list key="rootDirectory">
+			<item value="/Users/rpulekar/work/big-data-analytics-harvard/week-4-feb-19-2016/examples"/>
+			<item value="/Users/rpulekar/work/big-data-analytics-harvard/week-4-feb-19-2016/assignment4"/>
+			<item value="/Users/rpulekar/work/big-data-analytics-harvard/week-4-feb-19-2016/assignment4/mini-examples-java"/>
+			<item value="/Users/rpulekar/work/big-data-analytics-harvard/eclipse_workspace_for_course/Assignment3/src/e63/course/assignment3/Assignment3_Problem2.java"/>
+		</list>
+		<list key="projectNameTemplate">
+			<item value="[artifactId]"/>
+			<item value="[artifactId]-TRUNK"/>
+			<item value="[artifactId]-[version]"/>
+			<item value="[groupId].[artifactId]"/>
+			<item value="[groupId].[artifactId]-[version]"/>
+			<item value="[name]"/>
+		</list>
+	</section>
+	<section name="wizardPage">
+		<list key="groupId">
+			<item value="e63.course.assignment4"/>
+			<item value="Assignment4"/>
+		</list>
+		<list key="name">
+			<item value="Assignment4"/>
+		</list>
+		<list key="artifactId">
+			<item value="Assignment4"/>
+		</list>
+		<list key="version">
+			<item value="0.0.1-SNAPSHOT"/>
+		</list>
+	</section>
+</section>

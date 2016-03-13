@@ -1,0 +1,9 @@
+'''
+Created on Feb 23, 2016
+
+@author: rpulekar
+'''
+def add(a,b):
+    return a+b
+
+print add(2,3)

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;Assignment4_Problem3/src/Assignment4_Problem3.py&apos; to &apos;WordCount.py&apos;" description="Rename resource &apos;Assignment4_Problem3.py&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/Assignment4_Problem3.py" name="WordCount.py" stamp="1456467126157" updateReferences="true"/>
+</session>
