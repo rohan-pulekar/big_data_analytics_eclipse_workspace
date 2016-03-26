@@ -1,2 +1,0 @@
-eclipse.preferences.version=1
-prefWatchExpressions=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\n<watchExpressions>\n<expression enabled\="true" text\="tuple._2"/>\n<expression enabled\="true" text\="tuple._2.split(&quot;\\n&quot;)"/>\n<expression enabled\="true" text\="tuple._2.getClass()"/>\n<expression enabled\="true" text\="tuple._2.split(Pattern.quote(&quot;.&quot;))"/>\n<expression enabled\="true" text\="Pattern.quote(&quot;.&quot;)"/>\n<expression enabled\="true" text\="StringTokenizer(&quot;"/>\n</watchExpressions>\n
