@@ -11,11 +11,27 @@ import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 
+/**
+ * This java class is for Assignment7 Problem4 of e63 course (Big Data
+ * Analytics) of Harvard University
+ * 
+ * @author Rohan Pulekar
+ *
+ */
 public class PreparedClient {
 	private Cluster cluster;
 	private Session session;
-	private BoundStatement boundStatementForSongs;
+	private BoundStatement boundStatement;
 
+	/**
+	 * This function will connect to the Cassandra cluster specified by the URL
+	 * in input parameter node. It will then create session object from that
+	 * connection. It will then get metadata of that cluster. It will then get
+	 * and print information of all hosts
+	 * 
+	 * @param node
+	 *            (string containing the cluster URL)
+	 */
 	public void connect(String node) {
 		cluster = Cluster.builder().addContactPoint(node).build();
 		session = cluster.connect("prepared_client");
@@ -27,30 +43,46 @@ public class PreparedClient {
 		}
 	}
 
+	/**
+	 * This function will create a table person in the Cassandra keyspace
+	 * 'prepared_client'. It will use the session object created above.
+	 */
 	public void createSchema() {
 		session.execute(
 				"create table prepared_client.person (user_id uuid PRIMARY KEY, fname text, lname text, city text, cell_phone1 text, cell_phone2 text, cell_phone3 text);");
 	}
 
+	/**
+	 * This function will create a prepared statement and a bound statement for
+	 * table person. It will use the session object created above.
+	 */
 	public void createPreparedAndBoundStatments() {
-		PreparedStatement statement = session.prepare(
+		PreparedStatement preparedStatement = session.prepare(
 				"insert into prepared_client.person (user_id, fname, lname, city, cell_phone1, cell_phone2, cell_phone3) values (?, ?, ?, ?, ?, ?, ?);");
-		boundStatementForSongs = new BoundStatement(statement);
+		boundStatement = new BoundStatement(preparedStatement);
 	}
 
+	/**
+	 * This function will insert data into the table person. It will use the
+	 * boundStatement object created above.
+	 */
 	public void loadData() {
+		// Here I have used UUID and used randomUUID() method of UUID class
+		// to get a random UUID
+		boundStatement.bind(UUID.randomUUID(), "Rohan", "Pulekar", "Waltham", "6177651008", "6176545244", null);
+		session.execute(boundStatement);
 
-		boundStatementForSongs.bind(UUID.randomUUID(), "Rohan", "Pulekar", "Waltham", "6177651008", "6176545244", null);
-		session.execute(boundStatementForSongs);
-
-		boundStatementForSongs.bind(UUID.randomUUID(), "Vinita", "Chaudhari", "Waltham", "8432759393", "6178555244",
+		boundStatement.bind(UUID.randomUUID(), "Vinita", "Chaudhari", "Waltham", "8432759393", "6178555244",
 				"9476665544");
-		session.execute(boundStatementForSongs);
+		session.execute(boundStatement);
 
-		boundStatementForSongs.bind(UUID.randomUUID(), "Gauri", "Pulekar", "Worcester", "3728484938", null, null);
-		session.execute(boundStatementForSongs);
+		boundStatement.bind(UUID.randomUUID(), "Gauri", "Pulekar", "Worcester", "3728484938", null, null);
+		session.execute(boundStatement);
 	}
 
+	/**
+	 * This function will query the person table and print out each row.
+	 */
 	public void querySchema() {
 		ResultSet results = session.execute("select * from prepared_client.person");
 		System.out.println(String.format("%-40s%-20s%-20s%-20s%-20s%-20s%-20s", "user_id", "fname", "lname", "city",
@@ -64,10 +96,19 @@ public class PreparedClient {
 		}
 	}
 
+	/**
+	 * This function will close the session and the cluster
+	 */
 	public void close() {
+		session.close();
 		cluster.close(); // .shutdown();
 	}
 
+	/**
+	 * The main method
+	 * 
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		PreparedClient client = new PreparedClient();
 
