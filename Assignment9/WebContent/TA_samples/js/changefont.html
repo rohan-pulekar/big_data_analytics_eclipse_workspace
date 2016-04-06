@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body
+{
+background-color:#d0e4fe;
+}
+h1
+{
+color:orange;
+text-align:center;
+}
+p
+{
+font-family:"Times New Roman";
+font-size:25px;
+}
+</style>
+</head>
+<body>
+
+<h1>My First JavaScript</h1>
+
+<p id="demo" style.fontsize="25px">JavaScript can change the style of an HTML element.</p>
+
+<script>
+function myFunction() {
+    var x = document.getElementById("demo");
+    if (x.style.fontsize = "25px"){
+        x.style.fontSize = "14px";           
+        x.style.color = "green"; 
+    } else {
+        x.style.fontSize = "25px";           
+        x.style.color = "red"; 
+    }
+}
+</script>
+
+<button type="button" onclick="myFunction()">Click Me!</button>
+
+</body>
+</html> 
