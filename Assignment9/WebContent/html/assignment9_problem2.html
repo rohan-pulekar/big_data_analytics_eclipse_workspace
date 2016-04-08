@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Assignment9 Problem2</title>
+<script type="text/javascript" src="../js/d3/d3.js"></script>
+</head>
+<body>
+	<script>
+		var width = 1060, height = 700, radius = Math.min(width, height) / 2;
+
+		var color_map = new Object(); // or var map = {};
+		color_map["ASIA"] = "RED";
+		color_map["AFRICA"] = "Yellow";
+		color_map["EUROPE"] = "Green";
+		color_map["LATIN AMERICA"] = "Orange";
+		color_map["OCEANIA"] = "Maroon";
+		color_map["AMERICA"] = "SlateGray";
+
+		var color = d3.scale.ordinal()
+				.range(
+						[ "RED", "Yellow", "Green", "Orange", "Maroon",
+								"SlateGray", "" ]);
+
+		var arc = d3.svg.arc().outerRadius(radius - 10).innerRadius(0);
+
+		var labelArc = d3.svg.arc().outerRadius(radius - 40).innerRadius(
+				radius - 40);
+
+		var pie = d3.layout.pie().sort(function(a, b) {
+			//console.log(a["Continent"]);
+			//console.log(b["Continent"]);
+			return d3.descending(a["Continent"], b["Continent"]);
+		}).value(function(d) {
+			return d["Population"];
+		});
+
+		var svg = d3.select("body").append("svg").attr("width", width).attr(
+				"height", height).append("g").attr("transform",
+				"translate(" + width / 2 + "," + height / 2 + ")");
+
+		d3
+				.csv(
+						"../input_files/life_expectancy_income.csv",
+						type,
+						function(error, data) {
+							if (error)
+								throw error;
+
+							var arcs = svg.selectAll(".arc").data(pie(data))
+									.enter().append("g").attr("class", "arc");
+
+							/* arcs.append("path").attr("d", arc).style("fill", function(d, i) {
+								return color(i);
+							});
+
+							arcs.append("text").attr("transform", function(d) {
+								return "translate(" + labelArc.centroid(d) + ")";
+							}).attr("dy", ".35em").text(function(d) {
+								return d.data["Country"];
+							}); */
+
+							var current_fill_colr;
+
+							arcs
+									.append("path")
+									.attr("d", arc)
+									.style("fill", function(d, i) {
+										return color_map[d.data["Continent"]]
+									})
+									.on(
+											"mouseover",
+											function(d, i) {
+												current_fill_colr = d3.select(
+														this).style("fill");
+												d3.select(this).style("fill",
+														"#c2adeb");
+												arcs
+														.append("text")
+														.attr("dy", ".5em")
+														.style("text-anchor",
+																"middle")
+														.style("font-size", 45)
+														.attr("class", "label")
+														.style("fill", "White")
+														.text(
+																d.data["Country"]
+																		+ "    "
+																		+ Math
+																				.round(d.data["Population"] / 1000000)
+																		+ " million");
+
+											}).on(
+											"mouseout",
+											function(d) {
+												arcs.select(".label").remove();
+												d3.select(this).style("fill",
+														current_fill_colr);
+											});
+
+						});
+
+		function type(d) {
+			d["Population"] = +d["Population"];
+			return d;
+		}
+	</script>
+	Assignment9 Problem2
+</body>
+</html>
