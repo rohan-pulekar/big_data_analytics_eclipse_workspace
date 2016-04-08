@@ -2,109 +2,122 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="author" content="Rohan Pulekar">
+<meta name="description"
+	content="This html file is for Assignment9 Problem2 of e63 course (Big Data Analutics) at Harvard Extension School">
 <title>Assignment9 Problem2</title>
 <script type="text/javascript" src="../js/d3/d3.js"></script>
 </head>
 <body>
 	<script>
-		var width = 1060, height = 700, radius = Math.min(width, height) / 2;
+		// create dimensions for svg element
+		var svgWidth = 1060, svgHeight = 600, pieRadius = Math.min(svgWidth,
+				svgHeight) / 2;
 
-		var color_map = new Object(); // or var map = {};
-		color_map["ASIA"] = "RED";
-		color_map["AFRICA"] = "Yellow";
-		color_map["EUROPE"] = "Green";
-		color_map["LATIN AMERICA"] = "Orange";
-		color_map["OCEANIA"] = "Maroon";
-		color_map["AMERICA"] = "SlateGray";
+		// create color map to map each continent to a color
+		var colorMap = new Object();
+		colorMap["ASIA"] = "RED";
+		colorMap["AFRICA"] = "Yellow";
+		colorMap["EUROPE"] = "Green";
+		colorMap["LATIN AMERICA"] = "Orange";
+		colorMap["OCEANIA"] = "Maroon";
+		colorMap["AMERICA"] = "SlateGray";
 
-		var color = d3.scale.ordinal()
-				.range(
-						[ "RED", "Yellow", "Green", "Orange", "Maroon",
-								"SlateGray", "" ]);
+		// create an arc generator and give it inner and outer radius
+		var arc = d3.svg.arc().outerRadius(pieRadius - 20).innerRadius(0);
 
-		var arc = d3.svg.arc().outerRadius(radius - 10).innerRadius(0);
+		// construct a new pie
+		var pie = d3.layout.pie();
 
-		var labelArc = d3.svg.arc().outerRadius(radius - 40).innerRadius(
-				radius - 40);
-
-		var pie = d3.layout.pie().sort(function(a, b) {
-			//console.log(a["Continent"]);
-			//console.log(b["Continent"]);
+		// create the sort order so that all slices belonging to the same continent will be grouped together when pie is being constructed
+		pie.sort(function(a, b) {
 			return d3.descending(a["Continent"], b["Continent"]);
-		}).value(function(d) {
+		});
+
+		// this specified that population should be used while constructing each slice of the pie
+		pie.value(function(d) {
 			return d["Population"];
 		});
 
-		var svg = d3.select("body").append("svg").attr("width", width).attr(
-				"height", height).append("g").attr("transform",
-				"translate(" + width / 2 + "," + height / 2 + ")");
+		// create the svg element
+		var svg = d3.select("body").append("svg").attr("width", svgWidth).attr(
+				"height", svgHeight).append("g").attr("transform",
+				"translate(" + svgWidth / 2 + "," + (svgHeight / 2) + ")");
 
-		d3
-				.csv(
-						"../input_files/life_expectancy_income.csv",
-						type,
-						function(error, data) {
-							if (error)
-								throw error;
+		// read from the below mentioned csv file 
+		d3.csv("../input_files/life_expectancy_income.csv", getPopulation,
+				function(error, data) {
+					if (error)
+						throw error;
 
-							var arcs = svg.selectAll(".arc").data(pie(data))
-									.enter().append("g").attr("class", "arc");
+					// create an arc corresponding to each row in the csv file
+					var arcs = svg.selectAll(".arc").data(pie(data)).enter()
+							.append("g").attr("class", "arc");
 
-							/* arcs.append("path").attr("d", arc).style("fill", function(d, i) {
-								return color(i);
+					// this is a variable to keep track of the fill color before mouse enters the pie slice
+					var fillColorForCountry;
+
+					// create a path for the slice corresponding to current country
+					arcs.append("path").attr("d", arc).style("fill",
+							function(d, i) {
+								return colorMap[d.data["Continent"]];
+							}).on(
+							"mouseover",
+							function(d, i) {
+
+								// set the fill color to light purple
+								d3.select(this).style("fill", "#c2ade0");
+
+								// create label for the country on which user's mouse is over
+								arcs.append("text").attr("dy", ".5em").style(
+										"text-anchor", "middle").style(
+										"font-size", 45).attr("class",
+										"selectedCountryLabel").style("fill",
+										"White").text(
+										getDisplayLabelForCountry(d));
+
+							}).on(
+							"mouseout",
+							function(d) {
+								// remove the selected country label		
+								arcs.select(".selectedCountryLabel").remove();
+
+								// set the fill color back to the color corresponding to continent of the country
+								d3.select(this).style("fill",
+										colorMap[d.data["Continent"]]);
 							});
 
-							arcs.append("text").attr("transform", function(d) {
-								return "translate(" + labelArc.centroid(d) + ")";
-							}).attr("dy", ".35em").text(function(d) {
-								return d.data["Country"];
-							}); */
+				});
 
-							var current_fill_colr;
-
-							arcs
-									.append("path")
-									.attr("d", arc)
-									.style("fill", function(d, i) {
-										return color_map[d.data["Continent"]]
-									})
-									.on(
-											"mouseover",
-											function(d, i) {
-												current_fill_colr = d3.select(
-														this).style("fill");
-												d3.select(this).style("fill",
-														"#c2adeb");
-												arcs
-														.append("text")
-														.attr("dy", ".5em")
-														.style("text-anchor",
-																"middle")
-														.style("font-size", 45)
-														.attr("class", "label")
-														.style("fill", "White")
-														.text(
-																d.data["Country"]
-																		+ "    "
-																		+ Math
-																				.round(d.data["Population"] / 1000000)
-																		+ " million");
-
-											}).on(
-											"mouseout",
-											function(d) {
-												arcs.select(".label").remove();
-												d3.select(this).style("fill",
-														current_fill_colr);
-											});
-
-						});
-
-		function type(d) {
+		// this changes population from string to number format
+		function getPopulation(d) {
 			d["Population"] = +d["Population"];
 			return d;
 		}
+
+		// create label for the country on which user has mouse over
+		function getDisplayLabelForCountry(d) {
+			var displayLabelForCountry = d.data["Country"] + "    "
+					+ Math.round(d.data["Population"] / 1000000) + " million";
+			return displayLabelForCountry;
+		}
+
+		// create legends for the pie chart through javascript
+		document.write("</br></br>");
+		document.write("<table cellpadding='10'><tr>");
+		for ( var continent in colorMap) {
+			if (colorMap.hasOwnProperty(continent)) {
+				document.write("<td>");
+				document
+						.write("<div style='width:40px;height:10px;border:1px solid #000;background-color:" + colorMap[continent] +"'></div>"
+								+ continent);
+				document.write("</td>");
+			}
+		}
+		document.write("</tr></table>");
 	</script>
-	Assignment9 Problem2
+	<div>
+		<h1>Assignment9 Problem2</h1>
+	</div>
 </body>
 </html>

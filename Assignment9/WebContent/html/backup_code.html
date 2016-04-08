@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+	<script>
+	document.write("</br></br>");
+	document.write("<table cellpadding='10'><tr>");
+	for ( var continent in color_map) {
+		if (color_map.hasOwnProperty(continent)) {
+			document.write("<td>");
+			document.write(continent + "<div style='width:40px;height:10px;border:1px solid #000;background-color:" + color_map[continent] +"'></div>");
+			document.write("</td>");
+		}
+	}
+	document.write("</tr></table>");
+	</script>
+</body>
+</html>
