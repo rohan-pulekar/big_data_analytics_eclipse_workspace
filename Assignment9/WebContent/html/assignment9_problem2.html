@@ -45,49 +45,45 @@
 				"translate(" + svgWidth / 2 + "," + (svgHeight / 2) + ")");
 
 		// read from the below mentioned csv file 
-		d3.csv("../input_files/assignment9_data.csv", getPopulation,
-				function(error, data) {
-					if (error)
-						throw error;
+		d3.csv("../input_files/assignment9_data.csv", getPopulation, function(
+				error, data) {
+			if (error)
+				throw error;
 
-					// create an arc corresponding to each row in the csv file
-					var arcs = svg.selectAll(".arc").data(pie(data)).enter()
-							.append("g").attr("class", "arc");
+			// create an arc corresponding to each row in the csv file
+			var arcs = svg.selectAll(".arc").data(pie(data)).enter()
+					.append("g").attr("class", "arc");
 
-					// this is a variable to keep track of the fill color before mouse enters the pie slice
-					var fillColorForCountry;
+			// this is a variable to keep track of the fill color before mouse enters the pie slice
+			var fillColorForCountry;
 
-					// create a path for the slice corresponding to current country
-					arcs.append("path").attr("d", arc).style("fill",
-							function(d, i) {
-								return colorMap[d.data["Continent"]];
-							}).on(
-							"mouseover",
-							function(d, i) {
+			// create a path for the slice corresponding to current country
+			arcs.append("path").attr("d", arc).style("fill", function(d, i) {
+				return colorMap[d.data["Continent"]];
+			}).on(
+					"mouseover",
+					function(d, i) {
 
-								// set the fill color to light purple
-								d3.select(this).style("fill", "#c2ade0");
+						// set the fill color to light purple
+						d3.select(this).style("fill", "#c2ade0");
 
-								// create label for the country on which user's mouse is over
-								arcs.append("text").attr("dy", ".5em").style(
-										"text-anchor", "middle").style(
-										"font-size", 45).attr("class",
+						// create label for the country on which user's mouse is over
+						arcs.append("text").attr("dy", ".5em").style(
+								"text-anchor", "middle").style("font-size", 25)
+								.attr("font-family", "Verdana").attr("class",
 										"selectedCountryLabel").style("fill",
 										"White").text(
 										getDisplayLabelForCountry(d));
 
-							}).on(
-							"mouseout",
-							function(d) {
-								// remove the selected country label		
-								arcs.select(".selectedCountryLabel").remove();
+					}).on("mouseout", function(d) {
+				// remove the selected country label		
+				arcs.select(".selectedCountryLabel").remove();
 
-								// set the fill color back to the color corresponding to continent of the country
-								d3.select(this).style("fill",
-										colorMap[d.data["Continent"]]);
-							});
+				// set the fill color back to the color corresponding to continent of the country
+				d3.select(this).style("fill", colorMap[d.data["Continent"]]);
+			});
 
-				});
+		});
 
 		// this changes population from string to number format
 		function getPopulation(d) {
@@ -97,13 +93,13 @@
 
 		// create label for the country on which user has mouse over
 		function getDisplayLabelForCountry(d) {
-			var displayLabelForCountry = d.data["Country"] + "    "
+			var displayLabelForCountry = d.data["Country"] + "   Population:"
 					+ Math.round(d.data["Population"] / 1000000) + " million";
 			return displayLabelForCountry;
 		}
 
 		// create legends for the pie chart through javascript
-		document.write("</br></br>");
+		document.write("</br>");
 		document.write("<table cellpadding='10'><tr>");
 		for ( var continent in colorMap) {
 			if (colorMap.hasOwnProperty(continent)) {
@@ -117,7 +113,8 @@
 		document.write("</tr></table>");
 	</script>
 	<div>
-		<h1>Assignment9 Problem2</h1>
+		<h2>Assignment9 Problem2</h2>
+		<span>Pie slice of each country is proportional to its population</span>
 	</div>
 </body>
 </html>

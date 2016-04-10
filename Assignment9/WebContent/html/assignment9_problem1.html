@@ -15,14 +15,13 @@
 div.tooltip {
 	position: absolute;
 	text-align: center;
-	width: 60px;
-	height: 28px;
+	width: 200px;
+	height: 80px;
 	padding: 2px; : 18 px sans-serif;
 	border: 20px;
-	background: white;
+	background: #d1c2f0;
 	border-radius: 8px;
 	pointer-events: none;
-	background: white;
 }
 </style>
 </head>
@@ -35,7 +34,7 @@ div.tooltip {
 			right : 20,
 			bottom : 30,
 			left : 40
-		}, svgWidth = 1260 - svgMargin.left - svgMargin.right, svgHeight = 500
+		}, svgWidth = 1360 - svgMargin.left - svgMargin.right, svgHeight = 500
 				- svgMargin.top - svgMargin.bottom;
 
 		// define x axis
@@ -79,119 +78,122 @@ div.tooltip {
 				.style("opacity", 0);
 
 		// load data from the below mentioned csv file
-		d3
-				.csv(
-						"../input_files/assignment9_data.csv",
-						function(error, data) {
+		d3.csv("../input_files/assignment9_data.csv", function(error, data) {
 
-							// change from string to number format the per capita income and life expectancy fields
-							data
-									.forEach(function(d) {
-										d["Per capita income"] = +d["Per capita income"];
-										d["Life expectancy in 2015"] = +d["Life expectancy in 2015"];
-									});
+			// change from string to number format the per capita income and life expectancy fields
+			data.forEach(function(d) {
+				d["Per capita income"] = +d["Per capita income"];
+				d["Life expectancy in 2015"] = +d["Life expectancy in 2015"];
+			});
 
-							// add buffer to data domain for clarity of the graph
-							xScale.domain([ Math.exp(5), Math.exp(13) ]);
-							yScale.domain([ d3.min(data, yValue) - 40,
-									d3.max(data, yValue) + 20 ]);
+			// add buffer to data domain for clarity of the graph
+			xScale.domain([ Math.pow(10, 2), Math.pow(10, 5) ]);
+			yScale.domain([ d3.min(data, yValue) - 20,
+					d3.max(data, yValue) + 10 ]);
 
-							// draw x axis
-							svg.append("g").attr("class", "x axis").attr(
-									"transform",
-									"translate(0," + svgHeight + ")").call(
-									xAxis).append("text")
-									.attr("class", "label").attr("x", svgWidth)
-									.attr("y", -6).style("text-anchor", "end")
-									.text("Per capita income");
+			// draw x axis
+			svg.append("g").attr("class", "x axis").attr("transform",
+					"translate(0," + svgHeight + ")").call(xAxis)
+					.append("text").attr("class", "label").attr("x", svgWidth)
+					.attr("y", -6).style("text-anchor", "end").text(
+							"Per capita income");
 
-							// draw y axis
-							svg.append("g").attr("class", "y axis").call(yAxis)
-									.append("text").attr("class", "label")
-									.attr("transform", "rotate(-90)").attr("y",
-											6).attr("dy", ".71em").style(
-											"text-anchor", "end").text(
-											"Life expectancy in 2015");
+			// draw y axis
+			svg.append("g").attr("class", "y axis").call(yAxis).append("text")
+					.attr("class", "label").attr("transform", "rotate(-90)")
+					.attr("y", 6).attr("dy", ".71em").style("text-anchor",
+							"end").text("Life expectancy in 2015");
 
-							// draw a dot for each country
-							svg
-									.selectAll(".dot")
-									.data(data)
-									.enter()
-									.append("circle")
-									.attr("class", "dot")
-									.attr("r", function(d) {
-										return getRadius(d["Population"]);
-									})
-									.attr("cx", xMap)
-									.attr("cy", yMap)
-									.style("fill", function(d) {
-										return color(cValue(d));
-									})
-									.on(
-											"mouseover",
-											function(d) {
-												// get the circle element on which is mouse is over
-												var circleElement = d3
-														.select(this)[0][0];
+			// draw a circle for each country
+			var circles = svg.selectAll(".dot").data(data).enter().append(
+					"circle").attr("class", "dot");
 
-												// make the tooltip for the circle visible
-												div.transition().duration(200)
-														.style("opacity", .9);
+			// set radius of the circle to a number thats proprtional to the square root population
+			circles.attr("r", function(d) {
+				return getRadius(d["Population"]);
+			});
 
-												// set the text and coordinates of the tooltip
-												div
-														.html(d["Country"])
-														.style(
-																"left",
-																(circleElement
-																		.getAttribute("cx") - circleElement
-																		.getAttribute("r"))
-																		+ "px")
-														.style(
-																"top",
-																(circleElement
-																		.getAttribute("cy") - circleElement
-																		.getAttribute("r"))
-																		+ "px");
-											}).on(
-											"mouseout",
-											function(d) {
-												// make the tooltip for the circle disappear
-												div.transition().duration(500)
-														.style("opacity", 0);
-											});
+			// set a sort fuunction so that countries with lower population/radius appear ahead of countries with higher population
+			circles.sort(function(a, b) {
+				return d3.ascending(a["Population"], b["Population"]);
+			});
 
-							// draw legends
-							var legend = svg.selectAll(".legend").data(
-									color.domain()).enter().append("g").attr(
-									"class", "legend").attr("transform",
-									function(d, i) {
-										return "translate(0," + i * 20 + ")";
-									});
+			// set x and y cordinates for center of the circle
+			circles.attr("cx", xMap).attr("cy", yMap)
 
-							// draw legend colored rectangles
-							legend.append("rect").attr("x", svgWidth - 18)
-									.attr("width", 18).attr("height", 18)
-									.style("fill", color);
+			// fill the circle with color corresponding to the continent in which country resides
+			circles.style("fill", function(d) {
+				return color(cValue(d));
+			})
 
-							// draw legend text
-							legend.append("text").attr("x", svgWidth - 24)
-									.attr("y", 9).attr("dy", ".35em").style(
-											"text-anchor", "end").text(
-											function(d) {
-												return d;
-											});
-						});
+			// set mouseover and mouseout events for the circle
+			circles.on(
+					"mouseover",
+					function(d) {
+						// get the circle element on which is mouse is over
+						var circleElement = d3.select(this)[0][0];
 
-		// this function gets population and gives corresponding radius.  As you can see from the formula, it is proportional to the square root of population
+						// set the fill color to light purple
+						d3.select(this).style("fill", "#d1c2f0");
+
+						// make the tooltip for the circle visible
+						div.transition().duration(200).style("opacity", .9);
+
+						// set the text and coordinates of the tooltip
+						div.html(getDisplayLabelForCountry(d)).style(
+								"left",
+								(circleElement.getAttribute("cx")
+										- circleElement.getAttribute("r") - 50)
+										+ "px").style(
+								"top",
+								(circleElement.getAttribute("cy")
+										- circleElement.getAttribute("r") - 50)
+										+ "px");
+					}).on("mouseout", function(d) {
+				// set the fill color to the one for the continent in which this country is located
+				d3.select(this).style("fill", color(cValue(d)));
+
+				// make the tooltip for the circle disappear
+				div.transition().duration(500).style("opacity", 0);
+			});
+
+			// draw legends
+			var legend = svg.selectAll(".legend").data(color.domain()).enter()
+					.append("g").attr("class", "legend").attr("transform",
+							function(d, i) {
+								return "translate(0," + i * 20 + ")";
+							});
+
+			// draw legend colored rectangles
+			legend.append("rect").attr("x", svgWidth - 18).attr("width", 18)
+					.attr("height", 18).style("fill", color);
+
+			// draw legend text
+			legend.append("text").attr("x", svgWidth - 24).attr("y", 9).attr(
+					"dy", ".35em").style("text-anchor", "end").text(
+					function(d) {
+						return d;
+					});
+		});
+
+		// this function gets population and gives corresponding radius.  As you can see from the formula, radius given back is proportional to the square root of population
 		function getRadius(population) {
 			return Math.sqrt(population) / 600;
+		}
+
+		// create label for the country on which user has mouse over
+		function getDisplayLabelForCountry(d) {
+			var displayLabelForCountry = d["Country"] + "<br>Income:"
+					+ d["Per capita income"] + "<br>Life expectancy:"
+					+ d["Life expectancy in 2015"] + "<br>Population:"
+					+ Math.round(d["Population"] / 1000000) + " million";
+			return displayLabelForCountry;
 		}
 	</script>
 	<div>
 		<h1>Assignment9 Problem1</h1>
-		<h3>The above graph is for data of year 2015</h3>
+		<span>The above graph is for data of year 2015.</span> <br> <span>Area
+			of circle representing a country is proportional to its population</span>
 	</div>
 </body>
 </html>
