@@ -2,8 +2,16 @@ package e63.neo4j.Assignment10;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -73,6 +81,9 @@ public class Problem2 {
 			System.out.println("Database not available.  Will exit");
 			System.exit(1);
 		}
+
+		// ********************* START OF PROBLEM 2 *********************
+		System.out.println("********************* START OF PROBLEM 2 *********************");
 
 		// create node of type Movie for The Matrix movie and add properties to
 		// that node
@@ -197,6 +208,19 @@ public class Problem2 {
 		// create DIRECTED relation between David Leitch and John Wick
 		relation = createRelationshipBetweenNodes(directorDavidLeitchURI, movieJohnWickURI, "DIRECTED");
 		addPropertyToRelationship(relation, "shooting_camera_setup", "multi camera");
+
+		// ********************* END OF PROBLEM 2 *********************
+		System.out.println("********************* END OF PROBLEM 2 *********************");
+
+		System.out.println(System.lineSeparator());
+		System.out.println(System.lineSeparator());
+		// ********************* START OF PROBLEM 3 *********************
+		System.out.println("********************* START OF PROBLEM 3 *********************");
+
+		findOtherActorsInMoviesPlayedByAnActor(actorKeanuReevesURI);
+
+		// ********************* END OF PROBLEM 3 *********************
+		System.out.println("********************* END OF PROBLEM 3 *********************");
 
 	}
 
@@ -432,6 +456,261 @@ public class Problem2 {
 	 */
 	private static String createJSONForNameAndValue(String name, String value) {
 		return String.format("{ \"%s\" : \"%s\" }", name, value);
+	}
+
+	/**
+	 * This function finds movies acted in by an actor and then finds other
+	 * actors who also acted in those movies actors who acted
+	 * 
+	 * @param keanuReevesNodeURI
+	 * @throws URISyntaxException
+	 */
+	private static void findOtherActorsInMoviesPlayedByAnActor(URI keanuReevesNodeURI) throws URISyntaxException {
+
+		// create traversal definition such that we can navigate movies in which
+		// given actor has acted
+		TraversalDefinition traversalDefinition = new TraversalDefinition();
+		traversalDefinition.setOrder(TraversalDefinition.DEPTH_FIRST);
+		traversalDefinition.setUniqueness(TraversalDefinition.NODE);
+		traversalDefinition.setMaxDepth(10);
+		traversalDefinition.setReturnFilter(TraversalDefinition.ALL);
+		traversalDefinition.setRelationships(new Relation("ACTS_IN", Relation.OUT));
+
+		// create web service URI for traversal from Keanu Reeves actor node
+		URI actorNodeTraverserURI = new URI(keanuReevesNodeURI.toString() + "/traverse/node");
+
+		// create resource for web service for traversal from actor node
+		WebResource webResource = webClient.resource(actorNodeTraverserURI);
+
+		// convert traverse definition to json string
+		String jsonTraverserPayload = traversalDefinition.toJson();
+
+		// make a post to get json response containing movies having ACTS_IN
+		// relationship with this actor
+		ClientResponse webResponse = webResource.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON)
+				.entity(jsonTraverserPayload).post(ClientResponse.class);
+
+		// validate the web service response
+		if (webResponse == null || webResponse.getStatus() != 200) {
+			System.out.println("Something went wrong while searching for movies acted In By actor");
+			System.exit(1);
+		}
+
+		// get the json response
+		String jsonResponseAsString = webResponse.getEntity(String.class);
+
+		// convert string json response to json obect
+		JSONArray jsonArrayOfMovies = new JSONArray(jsonResponseAsString);
+
+		if (jsonArrayOfMovies == null || jsonArrayOfMovies.length() == 0) {
+			System.out.println("No movies found for the given actor");
+		}
+
+		// create variable for final collection of actors that have acted in
+		// movies played by Keanu Reeves
+		Set<String> finalListOfActors = new HashSet<String>();
+
+		// loop through the movies played by Keanu Reeves
+		for (Object object : jsonArrayOfMovies) {
+			if (object == null || !(object instanceof JSONObject)) {
+				continue;
+			}
+			JSONObject jsonObjectOfMovie = (JSONObject) object;
+
+			// get the movie name and display it
+			String movieName = String.valueOf(((JSONObject) jsonObjectOfMovie.get("data")).get("title").toString());
+			System.out.println(String.format("Keanu Reeves acted in movie: %s", movieName));
+
+			// get the movie node URI string and create URI object out of it
+			String movieNodeURIString = String.valueOf(jsonObjectOfMovie.get("self"));
+			URI movieNodeURI = new URI(movieNodeURIString);
+
+			// call the below function to get actors who have acted in the movie
+			Set<String> actorsInTheMovie = findActorsInAMovie(movieNodeURI);
+
+			// remove Keanu Reeves onject from that list since we are lookign
+			// for actors other than Keanu Reeves
+			actorsInTheMovie.remove("Keanu Reeves");
+
+			// display the actor names
+			System.out.println(String.format("Other actors in that movie were: %s", actorsInTheMovie));
+			System.out.println(System.lineSeparator());
+
+			// add to the final list of actors, the actors list from current
+			// movie
+			finalListOfActors.addAll(actorsInTheMovie);
+		}
+
+		// display the full list of actors
+		System.out.println(String.format("So full list of actors who acted in movies in which Keanu Reeves played: %s",
+				finalListOfActors));
+
+		// close the response
+		webResponse.close();
+	}
+
+	/**
+	 * This function returns a collection of actors who acted in the given movie
+	 * 
+	 * @param movieNodeURI
+	 * @return Set<String> (collection of actors)
+	 * @throws URISyntaxException
+	 */
+	private static Set<String> findActorsInAMovie(URI movieNodeURI) throws URISyntaxException {
+		// create variable for final collection of actors that have acted in the
+		// given movie
+		Set<String> listOfActors = new HashSet<String>();
+
+		// create traversal definition such that we can navigate actors who have
+		// acted in the given movie
+		TraversalDefinition traversalDefinition = new TraversalDefinition();
+		traversalDefinition.setOrder(TraversalDefinition.DEPTH_FIRST);
+		traversalDefinition.setUniqueness(TraversalDefinition.NODE);
+		traversalDefinition.setMaxDepth(10);
+		traversalDefinition.setReturnFilter(TraversalDefinition.ALL);
+		traversalDefinition.setRelationships(new Relation("ACTS_IN", Relation.IN));
+
+		// create web service URI for traversal from given movie node
+		URI movieNodeTraverserURI = new URI(movieNodeURI.toString() + "/traverse/node");
+
+		// create resource for web service for traversal from movie node
+		WebResource webResource = webClient.resource(movieNodeTraverserURI);
+
+		// convert traverse definition to json string
+		String jsonTraverserPayload = traversalDefinition.toJson();
+
+		// make a post to get json response containing actors having ACTS_IN
+		// relationship with this movie
+		ClientResponse webResponse = webResource.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON)
+				.entity(jsonTraverserPayload).post(ClientResponse.class);
+
+		// validate the web service response
+		if (webResponse == null || webResponse.getStatus() != 200) {
+			System.out.println("Something went wrong while searching for movies acted In By actor");
+			System.exit(1);
+		}
+
+		// get the json response
+		String jsonResponseAsString = webResponse.getEntity(String.class);
+
+		// convert string json response to json obect
+		JSONArray jsonArrayOfActors = new JSONArray(jsonResponseAsString);
+
+		if (jsonArrayOfActors == null || jsonArrayOfActors.length() == 0) {
+			return listOfActors;
+		}
+
+		// loop through the movies played by Keanu Reeves
+		for (Object object : jsonArrayOfActors) {
+			if (object == null || !(object instanceof JSONObject)) {
+				continue;
+			}
+			JSONObject jsonObjectOfActor = (JSONObject) object;
+
+			// get the actor name
+			String actorName = String.valueOf(((JSONObject) jsonObjectOfActor.get("data")).get("name"));
+
+			// add the actor name to list of actors
+			listOfActors.add(actorName);
+		}
+
+		// close the web service response
+		webResponse.close();
+
+		// return list of actors
+		return listOfActors;
+	}
+
+	private static class Relation {
+		public static final String OUT = "out";
+		public static final String IN = "in";
+		private String type;
+		private String direction;
+
+		public String toJsonCollection() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("{ ");
+			sb.append(" \"type\" : \"" + type + "\"");
+			if (direction != null) {
+				sb.append(", \"direction\" : \"" + direction + "\"");
+			}
+			sb.append(" }");
+			return sb.toString();
+		}
+
+		public Relation(String type, String direction) {
+			setType(type);
+			setDirection(direction);
+		}
+
+		public void setType(String type) {
+			this.type = type;
+		}
+
+		public void setDirection(String direction) {
+			this.direction = direction;
+		}
+	}
+
+	private static class TraversalDefinition {
+		public static final String DEPTH_FIRST = "depth first";
+		public static final String NODE = "node";
+		public static final String ALL = "all";
+
+		private String uniqueness = NODE;
+		private int maxDepth = 1;
+		private String returnFilter = ALL;
+		private String order = DEPTH_FIRST;
+		private List<Relation> relationships = new ArrayList<Relation>();
+
+		public void setOrder(String order) {
+			this.order = order;
+		}
+
+		public void setUniqueness(String uniqueness) {
+			this.uniqueness = uniqueness;
+		}
+
+		public void setMaxDepth(int maxDepth) {
+			this.maxDepth = maxDepth;
+		}
+
+		public void setReturnFilter(String returnFilter) {
+			this.returnFilter = returnFilter;
+		}
+
+		public void setRelationships(Relation... relationships) {
+			this.relationships = Arrays.asList(relationships);
+		}
+
+		public String toJson() {
+			StringBuilder sb = new StringBuilder();
+			sb.append("{ ");
+			sb.append(" \"order\" : \"" + order + "\"");
+			sb.append(", ");
+			sb.append(" \"uniqueness\" : \"" + uniqueness + "\"");
+			sb.append(", ");
+			if (relationships.size() > 0) {
+				sb.append("\"relationships\" : [");
+				for (int i = 0; i < relationships.size(); i++) {
+					sb.append(relationships.get(i).toJsonCollection());
+					if (i < relationships.size() - 1) { // Miss off the final
+														// comma
+						sb.append(", ");
+					}
+				}
+				sb.append("], ");
+			}
+			sb.append("\"return filter\" : { ");
+			sb.append("\"language\" : \"builtin\", ");
+			sb.append("\"name\" : \"");
+			sb.append(returnFilter);
+			sb.append("\" }, ");
+			sb.append("\"max depth\" : ");
+			sb.append(maxDepth);
+			sb.append(" }");
+			return sb.toString();
+		}
 	}
 
 }
