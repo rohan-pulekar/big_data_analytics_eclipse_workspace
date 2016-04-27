@@ -18,22 +18,20 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 
-// START n=node(*) MATCH (n)-[r]->(m) RETURN n,r,m;
-
 /**
- * This java class is for Assignment 10 of e63 course (Big Data Analytics) at
- * Harvard Extension School for Spring 2016 Usage:
+ * This java class is Problem2 and Problem3 for Assignment 10 of e63 course (Big
+ * Data Analytics) at Harvard Extension School for Spring 2016 Usage:
  * 
- * java e63.neo4j.Assignment10.Problem2 DB_SERVER_ROOT_URI DB_SERVER_USERNAME
- * DB_SERVER_PASSWORD
+ * java e63.neo4j.Assignment10.Problem2And3 DB_SERVER_ROOT_URI
+ * DB_SERVER_USERNAME DB_SERVER_PASSWORD
  * 
- * e.g. java e63.neo4j.Assignment10.Problem2 http://localhost:7474/db/data/
+ * e.g. java e63.neo4j.Assignment10.Problem2And3 http://localhost:7474/db/data/
  * neo4j password
  * 
  * @author Rohan Pulekar
  *
  */
-public class Problem2 {
+public class Problem2And3 {
 
 	// neo4j database URI
 	private static String DB_SERVER_ROOT_URI = "http://localhost:7474/db/data/";
@@ -189,6 +187,20 @@ public class Problem2 {
 		relation = createRelationshipBetweenNodes(actorCarrieAnneMossURI, movieTheMatrixRevolutionsURI, "ACTS_IN");
 		addPropertyToRelationship(relation, "role", "Trinity");
 
+		// create ACTS_IN relation between Laurence Fishburne and The Matrix
+		relation = createRelationshipBetweenNodes(actorLaurenceFishburneURI, movieTheMatrixURI, "ACTS_IN");
+		addPropertyToRelationship(relation, "role", "Morpheus");
+
+		// create ACTS_IN relation between Laurence Fishburne and The Matrix
+		// Reloaded
+		relation = createRelationshipBetweenNodes(actorLaurenceFishburneURI, movieTheMatrixReloadedURI, "ACTS_IN");
+		addPropertyToRelationship(relation, "role", "Morpheus");
+
+		// create ACTS_IN relation between Laurence Fishburne and The Matrix
+		// Revolutions
+		relation = createRelationshipBetweenNodes(actorLaurenceFishburneURI, movieTheMatrixRevolutionsURI, "ACTS_IN");
+		addPropertyToRelationship(relation, "role", "Morpheus");
+
 		// create ACTS_IN relation between Keanu Reeves and John Wick
 		relation = createRelationshipBetweenNodes(actorKeanuReevesURI, movieJohnWickURI, "ACTS_IN");
 		addPropertyToRelationship(relation, "role", "John Wick");
@@ -217,7 +229,11 @@ public class Problem2 {
 		// ********************* START OF PROBLEM 3 *********************
 		System.out.println("********************* START OF PROBLEM 3 *********************");
 
-		findOtherActorsInMoviesPlayedByAnActor(actorKeanuReevesURI);
+		findOtherActorsInMoviesPlayedByKeanu(actorKeanuReevesURI);
+		System.out.println(System.lineSeparator());
+		System.out.println(System.lineSeparator());
+		findDirectorsOfMoviesPlayedByKeanu(actorKeanuReevesURI);
+		System.out.println(System.lineSeparator());
 
 		// ********************* END OF PROBLEM 3 *********************
 		System.out.println("********************* END OF PROBLEM 3 *********************");
@@ -250,7 +266,8 @@ public class Problem2 {
 	}
 
 	/**
-	 * THis method creates blank node
+	 * THis method creates blank node. This function is part of Problem2
+	 * solution
 	 * 
 	 * @return URI of the created node
 	 * @throws CustomException
@@ -281,7 +298,8 @@ public class Problem2 {
 	}
 
 	/**
-	 * Sets label to the given node
+	 * Sets label to the given node. This function is part of Problem2 solution
+	 * 
 	 * 
 	 * @param nodeURI
 	 * @param label
@@ -312,7 +330,8 @@ public class Problem2 {
 	}
 
 	/**
-	 * add property to the given node
+	 * This function adds property to the given node. This function is part of
+	 * Problem2 solution
 	 * 
 	 * @param nodeUri
 	 * @param propertyName
@@ -346,7 +365,8 @@ public class Problem2 {
 	}
 
 	/**
-	 * This method creates relationship between nodes
+	 * This function creates relationship between nodes. This function is part
+	 * of Problem2 solution
 	 * 
 	 * @param startNodeURI
 	 * @param endNodeURI
@@ -392,6 +412,8 @@ public class Problem2 {
 	 * The json created is something like: { "to" :
 	 * "http://localhost:7474/db/data/node/244", "type" : "ACTS_IN" }
 	 * 
+	 * This function is part of Problem2 solution
+	 * 
 	 * @param endNodeURI
 	 * @param relationshipType
 	 * @return String (json representation)
@@ -411,7 +433,8 @@ public class Problem2 {
 	}
 
 	/**
-	 * Create property for relationship
+	 * Create property for relationship. This function is part of Problem2
+	 * solution
 	 * 
 	 * @param relationshipURI
 	 * @param propertyName
@@ -450,6 +473,8 @@ public class Problem2 {
 	 * 
 	 * e.g. { "role" : "Neo" }
 	 * 
+	 * This function is part of Problem2 solution
+	 * 
 	 * @param name
 	 * @param value
 	 * @return String (json representation of name and value)
@@ -460,12 +485,14 @@ public class Problem2 {
 
 	/**
 	 * This function finds movies acted in by an actor and then finds other
-	 * actors who also acted in those movies actors who acted
+	 * actors who also acted in those movies actors who acted.
+	 * 
+	 * This function is part of Problem3 solution
 	 * 
 	 * @param keanuReevesNodeURI
 	 * @throws URISyntaxException
 	 */
-	private static void findOtherActorsInMoviesPlayedByAnActor(URI keanuReevesNodeURI) throws URISyntaxException {
+	private static void findOtherActorsInMoviesPlayedByKeanu(URI keanuReevesNodeURI) throws URISyntaxException {
 
 		// create traversal definition such that we can navigate movies in which
 		// given actor has acted
@@ -492,7 +519,7 @@ public class Problem2 {
 
 		// validate the web service response
 		if (webResponse == null || webResponse.getStatus() != 200) {
-			System.out.println("Something went wrong while searching for movies acted In By actor");
+			System.out.println("Something went wrong while searching for movies acted In By Keanu");
 			System.exit(1);
 		}
 
@@ -534,7 +561,7 @@ public class Problem2 {
 
 			// display the actor names
 			System.out.println(String.format("Other actors in that movie were: %s", actorsInTheMovie));
-			System.out.println(System.lineSeparator());
+			System.out.print(System.lineSeparator());
 
 			// add to the final list of actors, the actors list from current
 			// movie
@@ -542,7 +569,7 @@ public class Problem2 {
 		}
 
 		// display the full list of actors
-		System.out.println(String.format("So full list of actors who acted in movies in which Keanu Reeves played: %s",
+		System.out.print(String.format("So full list of actors who acted in movies in which Keanu Reeves played: %s",
 				finalListOfActors));
 
 		// close the response
@@ -550,7 +577,10 @@ public class Problem2 {
 	}
 
 	/**
-	 * This function returns a collection of actors who acted in the given movie
+	 * This function returns a collection of actors who acted in the given
+	 * movie.
+	 * 
+	 * This function is part of Problem3 solution
 	 * 
 	 * @param movieNodeURI
 	 * @return Set<String> (collection of actors)
@@ -619,6 +649,179 @@ public class Problem2 {
 
 		// return list of actors
 		return listOfActors;
+	}
+
+	/**
+	 * This function finds movies acted in by Keanu and then finds directors who
+	 * directed those movies.
+	 * 
+	 * This function is part of Problem3 solution
+	 * 
+	 * @param keanuReevesNodeURI
+	 * @throws URISyntaxException
+	 */
+	private static void findDirectorsOfMoviesPlayedByKeanu(URI keanuReevesNodeURI) throws URISyntaxException {
+
+		// create traversal definition such that we can navigate movies in which
+		// given actor has acted
+		TraversalDefinition traversalDefinition = new TraversalDefinition();
+		traversalDefinition.setOrder(TraversalDefinition.DEPTH_FIRST);
+		traversalDefinition.setUniqueness(TraversalDefinition.NODE);
+		traversalDefinition.setMaxDepth(10);
+		traversalDefinition.setReturnFilter(TraversalDefinition.ALL);
+		traversalDefinition.setRelationships(new Relation("ACTS_IN", Relation.OUT));
+
+		// create web service URI for traversal from Keanu Reeves actor node
+		URI actorNodeTraverserURI = new URI(keanuReevesNodeURI.toString() + "/traverse/node");
+
+		// create resource for web service for traversal from actor node
+		WebResource webResource = webClient.resource(actorNodeTraverserURI);
+
+		// convert traverse definition to json string
+		String jsonTraverserPayload = traversalDefinition.toJson();
+
+		// make a post to get json response containing movies having ACTS_IN
+		// relationship with this actor
+		ClientResponse webResponse = webResource.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON)
+				.entity(jsonTraverserPayload).post(ClientResponse.class);
+
+		// validate the web service response
+		if (webResponse == null || webResponse.getStatus() != 200) {
+			System.out.println("Something went wrong while searching for movies acted In By Keanu");
+			System.exit(1);
+		}
+
+		// get the json response
+		String jsonResponseAsString = webResponse.getEntity(String.class);
+
+		// convert string json response to json obect
+		JSONArray jsonArrayOfMovies = new JSONArray(jsonResponseAsString);
+
+		if (jsonArrayOfMovies == null || jsonArrayOfMovies.length() == 0) {
+			System.out.println("No movies found for the given actor");
+		}
+
+		// create variable for final collection of directors that have directed
+		// in
+		// movies played by Keanu Reeves
+		Set<String> finalListOfDirectors = new HashSet<String>();
+
+		// loop through the movies played by Keanu Reeves
+		for (Object object : jsonArrayOfMovies) {
+			if (object == null || !(object instanceof JSONObject)) {
+				continue;
+			}
+			JSONObject jsonObjectOfMovie = (JSONObject) object;
+
+			// get the movie name and display it
+			String movieName = String.valueOf(((JSONObject) jsonObjectOfMovie.get("data")).get("title").toString());
+			System.out.println(String.format("Keanu Reeves acted in movie: %s", movieName));
+
+			// get the movie node URI string and create URI object out of it
+			String movieNodeURIString = String.valueOf(jsonObjectOfMovie.get("self"));
+			URI movieNodeURI = new URI(movieNodeURIString);
+
+			// call the below function to get directors who have directed the
+			// movie
+			Set<String> directorsOfTheMovie = findDirectorsOfTheMovie(movieNodeURI);
+
+			// display the director names
+			if (!directorsOfTheMovie.isEmpty()) {
+				System.out.println(String.format("Directors in that movie were: %s", directorsOfTheMovie));
+			} else {
+				System.out.println("No directors found for this movie");
+			}
+			System.out.print(System.lineSeparator());
+
+			// add to the final list of directors, the directors list from
+			// current
+			// movie
+			finalListOfDirectors.addAll(directorsOfTheMovie);
+		}
+
+		// display the full list of actors
+		System.out.print(String.format("So full list of directors who directed movies in which Keanu Reeves played: %s",
+				finalListOfDirectors));
+
+		// close the response
+		webResponse.close();
+	}
+
+	/**
+	 * This function returns a collection of directors who directed the given
+	 * movie.
+	 * 
+	 * This function is part of Problem3 solution
+	 * 
+	 * @param movieNodeURI
+	 * @return Set<String> (collection of directors)
+	 * @throws URISyntaxException
+	 */
+	private static Set<String> findDirectorsOfTheMovie(URI movieNodeURI) throws URISyntaxException {
+		// create variable for final collection of directors that have directed
+		// the
+		// given movie
+		Set<String> listOfDirectors = new HashSet<String>();
+
+		// create traversal definition such that we can navigate directors who
+		// have
+		// directed in the given movie
+		TraversalDefinition traversalDefinition = new TraversalDefinition();
+		traversalDefinition.setOrder(TraversalDefinition.DEPTH_FIRST);
+		traversalDefinition.setUniqueness(TraversalDefinition.NODE);
+		traversalDefinition.setMaxDepth(10);
+		traversalDefinition.setReturnFilter(TraversalDefinition.ALL);
+		traversalDefinition.setRelationships(new Relation("DIRECTED", Relation.IN));
+
+		// create web service URI for traversal from given movie node
+		URI movieNodeTraverserURI = new URI(movieNodeURI.toString() + "/traverse/node");
+
+		// create resource for web service for traversal from movie node
+		WebResource webResource = webClient.resource(movieNodeTraverserURI);
+
+		// convert traverse definition to json string
+		String jsonTraverserPayload = traversalDefinition.toJson();
+
+		// make a post to get json response containing directors having ACTS_IN
+		// relationship with this movie
+		ClientResponse webResponse = webResource.accept(MediaType.APPLICATION_JSON).type(MediaType.APPLICATION_JSON)
+				.entity(jsonTraverserPayload).post(ClientResponse.class);
+
+		// validate the web service response
+		if (webResponse == null || webResponse.getStatus() != 200) {
+			System.out.println("Something went wrong while searching for movies acted In By director");
+			System.exit(1);
+		}
+
+		// get the json response
+		String jsonResponseAsString = webResponse.getEntity(String.class);
+
+		// convert string json response to json obect
+		JSONArray jsonArrayOfDirectors = new JSONArray(jsonResponseAsString);
+
+		if (jsonArrayOfDirectors == null || jsonArrayOfDirectors.length() == 0) {
+			return listOfDirectors;
+		}
+
+		// loop through the movies played by Keanu Reeves
+		for (Object object : jsonArrayOfDirectors) {
+			if (object == null || !(object instanceof JSONObject)) {
+				continue;
+			}
+			JSONObject jsonObjectOfDirector = (JSONObject) object;
+
+			// get the director name
+			String directorName = String.valueOf(((JSONObject) jsonObjectOfDirector.get("data")).get("name"));
+
+			// add the director name to list of directors
+			listOfDirectors.add(directorName);
+		}
+
+		// close the web service response
+		webResponse.close();
+
+		// return list of directors
+		return listOfDirectors;
 	}
 
 	private static class Relation {
