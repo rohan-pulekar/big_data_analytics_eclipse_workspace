@@ -21,6 +21,8 @@ import scala.Tuple2;
  * Harvard Extension School. The class can be run as a JAVA program in the
  * following way: Problem2_Consumer_DStream <brokers> <topics> <zookeeper>
  * 
+ * This class uses the older approach to receive data from Kafka
+ * 
  * @author Rohan Pulekar
  *
  */
@@ -45,7 +47,7 @@ public class Problem2_Consumer_DStream {
 		String zookeeper = args[2];
 
 		// Create a Java Spark Config.
-		SparkConf sparkConf = new SparkConf().setAppName("Assignment8_Problem3_Consumer");
+		SparkConf sparkConf = new SparkConf().setAppName("Assignment8_Problem2_Consumer_DStream");
 		// sparkConf.setMaster("local[5]"); // this is to run the program as a
 		// standalone java application
 

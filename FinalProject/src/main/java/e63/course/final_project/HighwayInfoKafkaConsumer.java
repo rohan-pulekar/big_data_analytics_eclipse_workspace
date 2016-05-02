@@ -1,8 +1,5 @@
-package e63.kafka.streaming;
+package e63.course.final_project;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -30,20 +27,17 @@ import kafka.message.MessageAndOffset;
  * This class is for Assignment8 Problem2 of e63 course (Big Data Analytics) at
  * Harvard Extension School. The class can be run as a JAVA program in the
  * following way: Problem2_Consumer_KafkaAPI <serverIPRunningKafka>
- * <kafkaPortNum> <kafkaTopics> <partitionNum>
+ * <kafkaPortNum> <kafkaTopics> <numberOfPartitions>
  * 
  * This class uses the newer approach to receive data from Kafka
  * 
  * @author Rohan Pulekar
  *
  */
-public class Problem2_Consumer_KafkaAPI {
-
-	// use File Writer to output the messages
-	private static FileWriter fileWriter = null;
+public class HighwayInfoKafkaConsumer {
 
 	// create a list that will hold replica brokers
-	private List<String> m_replicaBrokers = new ArrayList<String>();
+	private List<String> replicaBrokers = new ArrayList<String>();
 
 	private static final int KAFKA_CONSUMER_TIMEOUT = 100000;
 
@@ -65,22 +59,14 @@ public class Problem2_Consumer_KafkaAPI {
 		// passed to the program
 		if (args.length < 4) {
 			System.err.println(
-					"Usage: Problem2_Consumer_KafkaAPI <serverIPRunningKafka> <kafkaPortNum> <kafkaTopics> <partitionNum>\n"
+					"Usage: KafkaMessageConsumer <serverIPRunningKafka> <kafkaPortNum> <kafkaTopics> <partitionNum>\n"
 							+ " <serverIPRunningKafka> is a list of one or more Kafka broker IPs e.g. localhost\n"
 							+ " <kafkaPortNum> is the port number on which is running e.g. 9092\n"
 							+ " <kafkaTopics> is a list of one or more kafka topics to consume from e.g. assignment8_problem2and3_topic\n"
-							+ " <partitionNum> is the parititon number e.g. 0\n");
+							+ " <numberOfPartitions> is the parititon number e.g. 0\n");
 
 			// exit the program if all params are not supplied
 			System.exit(1);
-		}
-
-		try {
-			// initialize the file writer
-			fileWriter = new FileWriter(new File("./problem2_consumer_KafkaAPI.log"));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			System.exit(0);
 		}
 
 		// for my local instance this will be "localhost";
@@ -93,44 +79,65 @@ public class Problem2_Consumer_KafkaAPI {
 		String kafkaTopic = args[2];
 
 		// for my local instance this can be 0 or 1 or 2 or 3
-		int kafkaPartition = Integer.parseInt(args[3]);
+		int numberOfKafkaPartitions = Integer.parseInt(args[3]);
 
 		// create an instance of the class
-		Problem2_Consumer_KafkaAPI example = new Problem2_Consumer_KafkaAPI();
+		HighwayInfoKafkaConsumer kafkaMessageConsumer = new HighwayInfoKafkaConsumer();
 
 		// create a list of kafka broker IP addresses
 		List<String> kafkaBrokerIPs = new ArrayList<String>();
 		kafkaBrokerIPs.add(serverIPRunningKafka);
 
-		// log out a message saying consumer listening
-		System.out.println("Listening for kafka messages from " + serverIPRunningKafka + ":" + portNumberRunningKafka
-				+ "  on topic:" + kafkaTopic);
-		try {
-			fileWriter.write("Listening for kafka messages from " + serverIPRunningKafka + ":" + portNumberRunningKafka
-					+ "  on topic:" + kafkaTopic);
-			fileWriter.flush();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			System.exit(0);
-		}
+		for (int partitionNum = 0; partitionNum < numberOfKafkaPartitions; partitionNum++) {
+			try {
+				MessageListenerThread messageListenerThread = new MessageListenerThread(kafkaMessageConsumer,
+						kafkaTopic, partitionNum, kafkaBrokerIPs, portNumberRunningKafka);
+				messageListenerThread.start();
 
-		try {
-			// invoke the function to listen to messages
-			example.listenToKafkaMessages(kafkaTopic, kafkaPartition, kafkaBrokerIPs, portNumberRunningKafka);
+			} catch (Exception e) {
 
-		} catch (Exception e) {
-
-			// log out the exception
-			System.out.println("Exception encountered:" + e);
-			e.printStackTrace();
+				// log out the exception
+				System.out.println("Exception encountered:" + e);
+				e.printStackTrace();
+			}
 		}
 	}
 
 	/*
 	 * Default constructor. Initializes the list m_replicaBrokers
 	 */
-	public Problem2_Consumer_KafkaAPI() {
-		m_replicaBrokers = new ArrayList<String>();
+	public HighwayInfoKafkaConsumer() {
+		replicaBrokers = new ArrayList<String>();
+	}
+
+	private static class MessageListenerThread extends Thread {
+		private String kafkaTopic;
+		private int kafkaPartition;
+		private List<String> kafkaBrokerIPs;
+		private int portNumberRunningKafka;
+		private HighwayInfoKafkaConsumer kafkaMessageConsumer;
+
+		public MessageListenerThread(HighwayInfoKafkaConsumer kafkaMessageConsumer, String kafkaTopic,
+				int kafkaPartition, List<String> kafkaBrokerIPs, int portNumberRunningKafka) {
+			this.kafkaTopic = kafkaTopic;
+			this.kafkaPartition = kafkaPartition;
+			this.kafkaBrokerIPs = kafkaBrokerIPs;
+			this.portNumberRunningKafka = portNumberRunningKafka;
+			this.kafkaMessageConsumer = kafkaMessageConsumer;
+		}
+
+		public void run() {
+			// log out a message saying consumer listening
+			System.out.println(
+					"Listening for kafka messages on topic:" + kafkaTopic + " on kafka partition:" + kafkaPartition);
+			try {
+				kafkaMessageConsumer.listenToKafkaMessages(kafkaTopic, kafkaPartition, kafkaBrokerIPs,
+						portNumberRunningKafka);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -206,7 +213,7 @@ public class Problem2_Consumer_KafkaAPI {
 				short code = messageFetchResponse.errorCode(kafkaTopic, kafkaPartition);
 
 				// log out the error message
-				fileWriter.write("\nError fetching data from the Broker:" + leadKafkaBrokerIP + " Reason: " + code);
+				System.out.println("\nError fetching data from the Broker:" + leadKafkaBrokerIP + " Reason: " + code);
 
 				if (numErrors > 5) {
 					// this means there are too many errors. break out of the
@@ -246,7 +253,7 @@ public class Problem2_Consumer_KafkaAPI {
 
 				// check if the offset is correct
 				if (currentMessageOffset < readOffsetForReadingMessages) {
-					fileWriter.write("\nFound an old offset: " + currentMessageOffset + " Expecting: "
+					System.out.println("\nFound an old offset: " + currentMessageOffset + " Expecting: "
 							+ readOffsetForReadingMessages);
 					continue;
 				}
@@ -266,10 +273,9 @@ public class Problem2_Consumer_KafkaAPI {
 				System.out.println("Time: " + dateTimeFormat.format(new Date())
 						+ "   Kafka Consumer: Received message in the offset:"
 						+ String.valueOf(messageAndOffset.offset()) + " The message is: " + new String(bytes, "UTF-8"));
-				fileWriter.write("\nTime: " + dateTimeFormat.format(new Date())
+				System.out.println("\nTime: " + dateTimeFormat.format(new Date())
 						+ "   Kafka Consumer: Received message in the offset:"
 						+ String.valueOf(messageAndOffset.offset()) + " The message is: " + new String(bytes, "UTF-8"));
-				fileWriter.flush();
 				// increment the number of messages counter
 				numberOfMessagesRead++;
 			}
@@ -351,7 +357,7 @@ public class Problem2_Consumer_KafkaAPI {
 			boolean goToSleep = false;
 
 			// invoke find leader to find broker leader
-			PartitionMetadata partitionMetadata = findLeader(m_replicaBrokers, kafkServerPort, kafkaTopic,
+			PartitionMetadata partitionMetadata = findLeader(replicaBrokers, kafkServerPort, kafkaTopic,
 					kafkaPartition);
 
 			if (partitionMetadata == null) {
@@ -378,7 +384,7 @@ public class Problem2_Consumer_KafkaAPI {
 				}
 			}
 		}
-		fileWriter.write("\nUnable to find new leader after Broker failure. Exiting");
+		System.out.println("\nUnable to find new leader after Broker failure. Exiting");
 		throw new Exception("Unable to find new leader after Broker failure. Exiting");
 	}
 
@@ -445,9 +451,9 @@ public class Problem2_Consumer_KafkaAPI {
 
 			// set the replicaBrokers to replica brokers pointed by partition
 			// meta data we found
-			m_replicaBrokers.clear();
+			replicaBrokers.clear();
 			for (kafka.cluster.Broker replicaBroker : partitionMetaDataToReturn.replicas()) {
-				m_replicaBrokers.add(replicaBroker.host());
+				replicaBrokers.add(replicaBroker.host());
 			}
 		}
 
