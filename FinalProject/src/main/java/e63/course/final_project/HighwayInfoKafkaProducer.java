@@ -2,11 +2,14 @@ package e63.course.final_project;
 
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Date;
 import java.util.Properties;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.time.DateFormatUtils;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
@@ -53,15 +56,14 @@ public class HighwayInfoKafkaProducer {
 			String xmlString = kafkaMessageProducer.readHighwayXmlStream();
 
 			// create an instance of keyed message
-			kafkaKeyedMessage = new KeyedMessage<String, String>(kafkaTopic,
-					"hi" + DateFormatUtils.format(new Date(), "ss"));
+			kafkaKeyedMessage = new KeyedMessage<String, String>(kafkaTopic, xmlString);
 
 			// send the message
 			kafkaProducer.send(kafkaKeyedMessage);
 
 			try {
-				// sleep for 5 secs
-				Thread.sleep(5000);
+				// sleep for 30 secs
+				Thread.sleep(30000);
 			} catch (InterruptedException e) {
 				// this means the thread is interrupted by some other process.
 				// Exit in that case
@@ -70,14 +72,55 @@ public class HighwayInfoKafkaProducer {
 		}
 	}
 
+	private String getHighwayAndSpeedMap(Document xmlDocument) {
+		NodeList btDataNodes = xmlDocument.getElementsByTagName("btdata");
+
+		if (btDataNodes != null && btDataNodes.getLength() > 0) {
+			Element rootElement = (Element) btDataNodes.item(0);
+			if (rootElement != null) {
+				NodeList travelDataNodelist = rootElement.getElementsByTagName("TRAVELDATA");
+				if (travelDataNodelist != null && travelDataNodelist.getLength() > 0) {
+					Element travelDataNode = (Element) travelDataNodelist.item(0);
+					if (travelDataNode != null) {
+						if (travelDataNode.getElementsByTagName("LastUpdated") != null) {
+							if (travelDataNode.getElementsByTagName("LastUpdated").item(0) != null) {
+								String lastUpdated = travelDataNode.getElementsByTagName("LastUpdated").item(0)
+										.getTextContent();
+								return lastUpdated;
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	private String readHighwayXmlStream() throws Exception {
 		URL url = new URL("https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx");
 		URLConnection connection = url.openConnection();
+
+		DocumentBuilderFactory objDocumentBuilderFactory = null;
+		DocumentBuilder objDocumentBuilder = null;
+		Document xmlDocument = null;
 		try {
-			String xmlString = IOUtils.toString(connection.getInputStream(), "UTF-8");
-			return xmlString;
+			objDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
+			objDocumentBuilder = objDocumentBuilderFactory.newDocumentBuilder();
+
+			xmlDocument = objDocumentBuilder
+					.parse(new URL("https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx").openStream());
+			String updatedBy = processXmlDocument(xmlDocument);
+			return updatedBy;
 		} catch (Exception ex) {
 			throw ex;
 		}
+
+		// try {
+		// String xmlString = IOUtils.toString(connection.getInputStream(),
+		// "UTF-8");
+		// return xmlString;
+		// } catch (Exception ex) {
+		// throw ex;
+		// }
 	}
 }

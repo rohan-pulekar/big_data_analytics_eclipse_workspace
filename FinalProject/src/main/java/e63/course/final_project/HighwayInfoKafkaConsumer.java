@@ -103,6 +103,9 @@ public class HighwayInfoKafkaConsumer {
 		}
 	}
 
+	private void processKafkaMessage(String message) throws Exception {
+	}
+
 	/*
 	 * Default constructor. Initializes the list m_replicaBrokers
 	 */
@@ -270,14 +273,15 @@ public class HighwayInfoKafkaConsumer {
 				// get the payload bytes
 				payload.get(bytes);
 
+				String mesage = new String(bytes, "UTF-8");
+
 				System.out.println("Time: " + dateTimeFormat.format(new Date())
-						+ "   Kafka Consumer: Received message in the offset:"
-						+ String.valueOf(messageAndOffset.offset()) + " The message is: " + new String(bytes, "UTF-8"));
-				System.out.println("\nTime: " + dateTimeFormat.format(new Date())
-						+ "   Kafka Consumer: Received message in the offset:"
-						+ String.valueOf(messageAndOffset.offset()) + " The message is: " + new String(bytes, "UTF-8"));
+						+ "   Kafka Consumer: Received message in kafka partition:" + kafkaPartition + " in the offset:"
+						+ messageAndOffset.offset());
 				// increment the number of messages counter
 				numberOfMessagesRead++;
+
+				// processKafkaMessage(mesage);
 			}
 
 			if (numberOfMessagesRead == 0) {
