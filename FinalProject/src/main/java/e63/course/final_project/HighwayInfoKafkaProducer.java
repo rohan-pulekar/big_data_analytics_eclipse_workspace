@@ -1,16 +1,10 @@
 package e63.course.final_project;
 
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-
+import e63.course.dtos.MassachusettsHighway;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
@@ -36,91 +30,43 @@ public class HighwayInfoKafkaProducer {
 		// create properties map for kafka producer
 		Properties kafkaProducerProperties = new Properties();
 		kafkaProducerProperties.put("metadata.broker.list", kafkaServerIPAndPort);
-		kafkaProducerProperties.put("serializer.class", kafka.serializer.StringEncoder.class.getName());
-		// properties.put("partitioner.class"
+		kafkaProducerProperties.put("key.serializer.class", e63.course.kafka_encoders.HighwayEncoder.class.getName());
+		kafkaProducerProperties.put("serializer.class", e63.course.kafka_encoders.FloatEncoder.class.getName());
 		kafkaProducerProperties.put("request.required.acks", "1");
 
 		// create kafka producer config
 		ProducerConfig kafkaProducerConfig = new ProducerConfig(kafkaProducerProperties);
 
 		// create kafka producer
-		Producer<String, String> kafkaProducer = new Producer<String, String>(kafkaProducerConfig);
+		Producer<MassachusettsHighway, Float> kafkaProducer = new Producer<MassachusettsHighway, Float>(
+				kafkaProducerConfig);
 
 		// declare a variable for kafka keyed message
-		KeyedMessage<String, String> kafkaKeyedMessage = null;
+		KeyedMessage<MassachusettsHighway, Float> kafkaKeyedMessage = null;
 
 		// this is an infinite loop. so basically producer will keep messages
 		// until the program is shutdown
 		while (true) {
 
-			String xmlString = kafkaMessageProducer.readHighwayXmlStream();
+			// Date time = new Date();
 
-			// create an instance of keyed message
-			kafkaKeyedMessage = new KeyedMessage<String, String>(kafkaTopic, xmlString);
+			Map<MassachusettsHighway, Float> highwayAndSpeedMap = XmlFileProcessor.processLiveXmlStream();
 
-			// send the message
-			kafkaProducer.send(kafkaKeyedMessage);
+			if (highwayAndSpeedMap != null) {
+				for (Entry<MassachusettsHighway, Float> entry : highwayAndSpeedMap.entrySet()) {
+					// create an instance of keyed message
+					kafkaKeyedMessage = new KeyedMessage<MassachusettsHighway, Float>(kafkaTopic, entry.getKey(),
+							entry.getValue());
 
-			try {
-				// sleep for 30 secs
-				Thread.sleep(30000);
-			} catch (InterruptedException e) {
-				// this means the thread is interrupted by some other process.
-				// Exit in that case
-				System.exit(0);
-			}
-		}
-	}
-
-	private String getHighwayAndSpeedMap(Document xmlDocument) {
-		NodeList btDataNodes = xmlDocument.getElementsByTagName("btdata");
-
-		if (btDataNodes != null && btDataNodes.getLength() > 0) {
-			Element rootElement = (Element) btDataNodes.item(0);
-			if (rootElement != null) {
-				NodeList travelDataNodelist = rootElement.getElementsByTagName("TRAVELDATA");
-				if (travelDataNodelist != null && travelDataNodelist.getLength() > 0) {
-					Element travelDataNode = (Element) travelDataNodelist.item(0);
-					if (travelDataNode != null) {
-						if (travelDataNode.getElementsByTagName("LastUpdated") != null) {
-							if (travelDataNode.getElementsByTagName("LastUpdated").item(0) != null) {
-								String lastUpdated = travelDataNode.getElementsByTagName("LastUpdated").item(0)
-										.getTextContent();
-								return lastUpdated;
-							}
-						}
-					}
+					// send the message
+					kafkaProducer.send(kafkaKeyedMessage);
 				}
 			}
+
+			// HighwayInfoKafkaMessage highwayInfoKafkaMessage = new
+			// HighwayInfoKafkaMessage(highwayAndSpeedMap);
+
+			// System.out.println("message sent");
 		}
-		return null;
-	}
-
-	private String readHighwayXmlStream() throws Exception {
-		URL url = new URL("https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx");
-		URLConnection connection = url.openConnection();
-
-		DocumentBuilderFactory objDocumentBuilderFactory = null;
-		DocumentBuilder objDocumentBuilder = null;
-		Document xmlDocument = null;
-		try {
-			objDocumentBuilderFactory = DocumentBuilderFactory.newInstance();
-			objDocumentBuilder = objDocumentBuilderFactory.newDocumentBuilder();
-
-			xmlDocument = objDocumentBuilder
-					.parse(new URL("https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx").openStream());
-			String updatedBy = processXmlDocument(xmlDocument);
-			return updatedBy;
-		} catch (Exception ex) {
-			throw ex;
-		}
-
-		// try {
-		// String xmlString = IOUtils.toString(connection.getInputStream(),
-		// "UTF-8");
-		// return xmlString;
-		// } catch (Exception ex) {
-		// throw ex;
-		// }
 	}
 }
