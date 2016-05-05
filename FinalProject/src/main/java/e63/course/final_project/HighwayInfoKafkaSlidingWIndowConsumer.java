@@ -1,5 +1,8 @@
 package e63.course.final_project;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -20,9 +23,10 @@ import org.apache.spark.streaming.kafka.KafkaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import e63.course.dtos.HighwayInfoKafkaMessage;
 import e63.course.dtos.MassachusettsHighway;
-import e63.course.kafka_decoders.FloatDecoder;
-import e63.course.kafka_decoders.HighwayDecoder;
+import e63.course.kafka_decoders.DateDecoder;
+import e63.course.kafka_decoders.HighwayInfoKafkaDecoder;
 import scala.Tuple2;
 
 /**
@@ -41,21 +45,22 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 	private static final Logger LOGGER = LoggerFactory.getLogger(HighwayInfoKafkaSlidingWIndowConsumer.class);
 
 	// date format for printing times in log output
-	private static final DateFormat dateTimeFormat = new SimpleDateFormat("hh:mm:ss");
+	private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("hh:mm:ss");
 
-	private static int STREAMING_BATCH_DURATION_IN_SECS = 10;
+	private static int STREAMING_BATCH_DURATION_IN_SECS = 60;// 1 min
 
-	private static int WINDOW_DURATION_IN_SECS = 120;
+	private static int WINDOW_DURATION_IN_SECS = 120;// 2 mins
 
-	private static int SLIDE_INTERVAL_IN_SECS = 30;
+	private static int SLIDE_INTERVAL_IN_SECS = 60;// 1 min
 
 	/**
 	 * The main function for this class
 	 * 
 	 * @param args
 	 *            (<brokers> <topics>)
+	 * @throws IOException
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 
 		// make sure 2 arguments are passed to the program
 		if (args.length < 3) {
@@ -100,50 +105,99 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 		LOGGER.info("Listening for kafka messages from " + kafkaBrokers + "  on topic:" + kafkaTopic);
 
 		// create a pair input DStream
-		JavaPairInputDStream<MassachusettsHighway, Float> highwayAndSpeedsInputDStream = KafkaUtils.createDirectStream(
-				streamingContext, MassachusettsHighway.class, Float.class, HighwayDecoder.class, FloatDecoder.class,
-				kafkaInputDStreamParams, kafkaTopicsSet);
+		JavaPairInputDStream<Date, HighwayInfoKafkaMessage> highwayAndSpeedsInputDStream = KafkaUtils
+				.createDirectStream(streamingContext, Date.class, HighwayInfoKafkaMessage.class, DateDecoder.class,
+						HighwayInfoKafkaDecoder.class, kafkaInputDStreamParams, kafkaTopicsSet);
 
 		// here reduceByKeyAndWindow is used to create a sliding windowed
 		// stream.
 		// the window duration is WINDOW_DURATION_IN_SECS seconds
 		// and slide interval is SLIDE_INTERVAL_IN_SECS seconds
-		JavaPairDStream<MassachusettsHighway, Float> highwayAndSpeedsDStream = highwayAndSpeedsInputDStream
+		JavaPairDStream<Date, HighwayInfoKafkaMessage> highwayAndSpeedsDStream = highwayAndSpeedsInputDStream
 				.window(Durations.seconds(WINDOW_DURATION_IN_SECS), Durations.seconds(SLIDE_INTERVAL_IN_SECS));
 
 		// this function is to access each RDD
-		VoidFunction<JavaPairRDD<MassachusettsHighway, Float>> functionToLogOutEachRDD = new VoidFunction<JavaPairRDD<MassachusettsHighway, Float>>() {
+		VoidFunction<JavaPairRDD<Date, HighwayInfoKafkaMessage>> functionToLogOutEachRDD = new VoidFunction<JavaPairRDD<Date, HighwayInfoKafkaMessage>>() {
+
+			@Override
+			protected Object clone() throws CloneNotSupportedException {
+				// TODO Auto-generated method stub
+				return super.clone();
+			}
+
 			private static final long serialVersionUID = 1L;
 
 			@Override
-			public void call(JavaPairRDD<MassachusettsHighway, Float> highwayAndSpeedRDD) throws Exception {
+			public void call(JavaPairRDD<Date, HighwayInfoKafkaMessage> highwayAndSpeedRDD) throws Exception {
+
+				createNewCSVFileWithHeaders();
+				System.out.println(DATE_TIME_FORMAT.format(new Date()) + "	 created new file");
 
 				// some calendar and date operations to print time stamps for
 				Calendar calendar = Calendar.getInstance();
 				calendar.add(Calendar.SECOND, -1 * WINDOW_DURATION_IN_SECS);
 				Date currentTimeStamp = new Date();
 				Date timeStampAtStartOfWindow = calendar.getTime();
-				System.out.println("");
-				System.out.println("Current time: " + dateTimeFormat.format(currentTimeStamp)
-						+ " showing highway and speed in last " + WINDOW_DURATION_IN_SECS + " secs (from "
-						+ dateTimeFormat.format(timeStampAtStartOfWindow) + " to now)");
+				// System.out.println("");
+				// System.out.println("Current time: " +
+				// dateTimeFormat.format(currentTimeStamp)
+				// + " showing highway and speed in last " +
+				// WINDOW_DURATION_IN_SECS + " secs (from "
+				// + dateTimeFormat.format(timeStampAtStartOfWindow) + " to
+				// now)");
 
-				JavaPairRDD<MassachusettsHighway, Float> sortedHighwayAndSpeedRDD = highwayAndSpeedRDD.sortByKey();
+				JavaPairRDD<Date, HighwayInfoKafkaMessage> sortedHighwayAndSpeedRDD = highwayAndSpeedRDD.sortByKey();
 
-				// for each functinon to log out each tuple of number and count
+				// for each function to log out each tuple of number and count
 				sortedHighwayAndSpeedRDD.foreach(functionToLogOutEachTuple);
 			}
 
 			// this function is to access each tuple in the RDD and then print
 			// that tuple to the log wih LOGGER
-			VoidFunction<Tuple2<MassachusettsHighway, Float>> functionToLogOutEachTuple = new VoidFunction<Tuple2<MassachusettsHighway, Float>>() {
+			VoidFunction<Tuple2<Date, HighwayInfoKafkaMessage>> functionToLogOutEachTuple = new VoidFunction<Tuple2<Date, HighwayInfoKafkaMessage>>() {
 				private static final long serialVersionUID = 1L;
 
 				@Override
-				public void call(Tuple2<MassachusettsHighway, Float> tuple) throws Exception {
-					System.out.println("Highway:" + tuple._1() + " Speed:" + tuple._2());
+				public void call(Tuple2<Date, HighwayInfoKafkaMessage> tuple) throws Exception {
+					// System.out.println("Highway:" + tuple._1() + " Speed:" +
+					// tuple._2());
+					Date timeStamp = tuple._1();
+					HighwayInfoKafkaMessage highwayInfoKafkaMessage = tuple._2();
+					writeCsvFileContents(timeStamp, highwayInfoKafkaMessage.getHighway(),
+							highwayInfoKafkaMessage.getSpeed());
 				}
 			};
+
+			private void createNewCSVFileWithHeaders() throws IOException {
+				File csvOutputFile = new File(HighwayInfoConstants.CSV_OUTPUT_FILE_NAME);
+				if (csvOutputFile.exists() && csvOutputFile.isFile()) {
+					csvOutputFile.delete();
+				}
+				csvOutputFile.createNewFile();
+				FileWriter csvOutputFileWriter = new FileWriter(csvOutputFile);
+				csvOutputFileWriter.append("Time");
+				csvOutputFileWriter.append(',');
+				csvOutputFileWriter.append("Highway");
+				csvOutputFileWriter.append(',');
+				csvOutputFileWriter.append("Speed");
+				csvOutputFileWriter.append('\n');
+				csvOutputFileWriter.flush();
+				csvOutputFileWriter.close();
+			}
+
+			private void writeCsvFileContents(Date timeStamp, MassachusettsHighway highway, Float speed)
+					throws IOException {
+				File csvOutputFile = new File(HighwayInfoConstants.CSV_OUTPUT_FILE_NAME);
+				FileWriter csvOutputFileWriter = new FileWriter(csvOutputFile, true);
+				csvOutputFileWriter.write(HighwayInfoConstants.DATE_FORMATTER_FOR_TIME.format(timeStamp));
+				csvOutputFileWriter.append(',');
+				csvOutputFileWriter.write(String.valueOf(highway));
+				csvOutputFileWriter.append(',');
+				csvOutputFileWriter.write(HighwayInfoConstants.DECIMAL_FORMAT_WITH_ROUNDING.format(speed));
+				csvOutputFileWriter.append('\n');
+				csvOutputFileWriter.flush();
+				csvOutputFileWriter.close();
+			}
 		};
 
 		// call functionToLogOutEachRDD on each RDD of numberAndCountPairs so
@@ -154,4 +208,5 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 		streamingContext.start();
 		streamingContext.awaitTermination();
 	}
+
 }

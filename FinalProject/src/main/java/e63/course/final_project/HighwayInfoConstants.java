@@ -1,11 +1,18 @@
 package e63.course.final_project;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
 import e63.course.dtos.MassachusettsHighway;
 
 public class HighwayInfoConstants {
+
+	public static final String CSV_OUTPUT_FILE_NAME = "output_files/highway_info.csv";
+	public static final DateFormat DATE_FORMATTER_FOR_TIME = new SimpleDateFormat("hh:mm a z");
+	public static final DecimalFormat DECIMAL_FORMAT_WITH_ROUNDING = new DecimalFormat("#.#");
 	public static Map<Integer, MassachusettsHighway> highWayXMLFeedMap = new HashMap<Integer, MassachusettsHighway>();
 
 	static {

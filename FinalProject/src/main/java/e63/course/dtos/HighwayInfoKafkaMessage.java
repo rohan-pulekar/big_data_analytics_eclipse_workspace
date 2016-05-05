@@ -1,32 +1,33 @@
 package e63.course.dtos;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HighwayInfoKafkaMessage implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public HighwayInfoKafkaMessage(Map<MassachusettsHighway, Float> highwaySpeedmap) {
+	public HighwayInfoKafkaMessage(MassachusettsHighway highway, float speed) {
 		super();
-		this.highwaySpeedMap = highwaySpeedmap;
+		this.highway = highway;
+		this.speed = speed;
 	}
 
-	private Map<MassachusettsHighway, Float> highwaySpeedMap = new HashMap<MassachusettsHighway, Float>();
+	private MassachusettsHighway highway;
 
-	public Map<MassachusettsHighway, Float> getHighwaySpeedMap() {
-		return highwaySpeedMap;
+	private float speed;
+
+	public float getSpeed() {
+		return speed;
 	}
 
-	public void setHighwaySpeedMap(Map<MassachusettsHighway, Float> highwaySpeedmap) {
-		this.highwaySpeedMap = highwaySpeedmap;
+	public void setSpeed(float speed) {
+		this.speed = speed;
 	}
 
-	@Override
-	public String toString() {
-		if (highwaySpeedMap != null) {
-			return highwaySpeedMap.toString();
-		}
-		return "";
+	public MassachusettsHighway getHighway() {
+		return highway;
+	}
+
+	public void setHighway(MassachusettsHighway highway) {
+		this.highway = highway;
 	}
 }

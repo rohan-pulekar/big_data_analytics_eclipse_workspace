@@ -14,4 +14,9 @@ public enum MassachusettsHighway {
 		return displayName;
 	}
 
+	@Override
+	public String toString() {
+		return displayName;
+	}
+
 }
