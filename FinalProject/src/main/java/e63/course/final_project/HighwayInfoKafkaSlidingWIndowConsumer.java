@@ -1,7 +1,5 @@
 package e63.course.final_project;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -24,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import e63.course.dtos.HighwayInfoKafkaMessage;
-import e63.course.dtos.MassachusettsHighway;
 import e63.course.kafka_decoders.DateDecoder;
 import e63.course.kafka_decoders.HighwayInfoKafkaDecoder;
 import scala.Tuple2;
@@ -49,7 +46,7 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 
 	private static int STREAMING_BATCH_DURATION_IN_SECS = 60;// 1 min
 
-	private static int WINDOW_DURATION_IN_SECS = 120;// 2 mins
+	private static int WINDOW_DURATION_IN_SECS = 600;// 10 mins
 
 	private static int SLIDE_INTERVAL_IN_SECS = 60;// 1 min
 
@@ -81,7 +78,7 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 		String zookeeper = args[2];
 
 		// Create a Java Spark Config.
-		SparkConf sparkConf = new SparkConf().setMaster("local").setAppName("HighwayInfoKafkaSlidingWIndowConsumer");
+		SparkConf sparkConf = new SparkConf().setAppName("HighwayInfoKafkaSlidingWIndowConsumer");
 		// sparkConf.setMaster("local[5]"); // this is to run the program as a
 		// standalone java application
 
@@ -130,9 +127,6 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 			@Override
 			public void call(JavaPairRDD<Date, HighwayInfoKafkaMessage> highwayAndSpeedRDD) throws Exception {
 
-				createNewCSVFileWithHeaders();
-				System.out.println(DATE_TIME_FORMAT.format(new Date()) + "	 created new file");
-
 				// some calendar and date operations to print time stamps for
 				Calendar calendar = Calendar.getInstance();
 				calendar.add(Calendar.SECOND, -1 * WINDOW_DURATION_IN_SECS);
@@ -148,8 +142,14 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 
 				JavaPairRDD<Date, HighwayInfoKafkaMessage> sortedHighwayAndSpeedRDD = highwayAndSpeedRDD.sortByKey();
 
+				CSVFileWriter.createNewCSVFile();
+				System.out.println(DATE_TIME_FORMAT.format(new Date()) + "	 created new file");
+
 				// for each function to log out each tuple of number and count
 				sortedHighwayAndSpeedRDD.foreach(functionToLogOutEachTuple);
+
+				CSVFileWriter.writeToCSVFile();
+				System.out.println(DATE_TIME_FORMAT.format(new Date()) + "	 wrote contents to the file");
 			}
 
 			// this function is to access each tuple in the RDD and then print
@@ -159,45 +159,17 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 
 				@Override
 				public void call(Tuple2<Date, HighwayInfoKafkaMessage> tuple) throws Exception {
+					CSVFileWriter.addToContentsToBeWrittenToCSV(tuple);
 					// System.out.println("Highway:" + tuple._1() + " Speed:" +
 					// tuple._2());
-					Date timeStamp = tuple._1();
-					HighwayInfoKafkaMessage highwayInfoKafkaMessage = tuple._2();
-					writeCsvFileContents(timeStamp, highwayInfoKafkaMessage.getHighway(),
-							highwayInfoKafkaMessage.getSpeed());
+					// Date timeStamp = tuple._1();
+					// HighwayInfoKafkaMessage highwayInfoKafkaMessage =
+					// tuple._2();
+					// writeCsvFileContents(timeStamp,
+					// highwayInfoKafkaMessage.getHighway(),
+					// highwayInfoKafkaMessage.getSpeed());
 				}
 			};
-
-			private void createNewCSVFileWithHeaders() throws IOException {
-				File csvOutputFile = new File(HighwayInfoConstants.CSV_OUTPUT_FILE_NAME);
-				if (csvOutputFile.exists() && csvOutputFile.isFile()) {
-					csvOutputFile.delete();
-				}
-				csvOutputFile.createNewFile();
-				FileWriter csvOutputFileWriter = new FileWriter(csvOutputFile);
-				csvOutputFileWriter.append("Time");
-				csvOutputFileWriter.append(',');
-				csvOutputFileWriter.append("Highway");
-				csvOutputFileWriter.append(',');
-				csvOutputFileWriter.append("Speed");
-				csvOutputFileWriter.append('\n');
-				csvOutputFileWriter.flush();
-				csvOutputFileWriter.close();
-			}
-
-			private void writeCsvFileContents(Date timeStamp, MassachusettsHighway highway, Float speed)
-					throws IOException {
-				File csvOutputFile = new File(HighwayInfoConstants.CSV_OUTPUT_FILE_NAME);
-				FileWriter csvOutputFileWriter = new FileWriter(csvOutputFile, true);
-				csvOutputFileWriter.write(HighwayInfoConstants.DATE_FORMATTER_FOR_TIME.format(timeStamp));
-				csvOutputFileWriter.append(',');
-				csvOutputFileWriter.write(String.valueOf(highway));
-				csvOutputFileWriter.append(',');
-				csvOutputFileWriter.write(HighwayInfoConstants.DECIMAL_FORMAT_WITH_ROUNDING.format(speed));
-				csvOutputFileWriter.append('\n');
-				csvOutputFileWriter.flush();
-				csvOutputFileWriter.close();
-			}
 		};
 
 		// call functionToLogOutEachRDD on each RDD of numberAndCountPairs so

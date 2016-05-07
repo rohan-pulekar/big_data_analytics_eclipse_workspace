@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+body {
+	font: 10px sans-serif;
+}
+
+.axis path, .axis line {
+	fill: none;
+	stroke: #000;
+	shape-rendering: crispEdges;
+}
+
+.line {
+	fill: none;
+	stroke: steelblue;
+	stroke-width: 1.5px;
+}
+</style>
+<body>
+	<script src="../js/d3/d3.min.js"></script>
+	<script>
+		var margin = {
+			top : 20,
+			right : 80,
+			bottom : 30,
+			left : 100
+		}, width = 960 - margin.left - margin.right, height = 500 - margin.top
+				- margin.bottom;
+
+		var x = d3.time.scale().rangeRound([ 0, width ]);
+
+		var y = d3.scale.linear().range([ height, 0 ]);
+
+		var color = d3.scale.category10();
+
+		var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(d3.time.days,
+				1).tickFormat(d3.time.format('%a %d')).tickSize(0).tickPadding(
+				8);
+
+		var yAxis = d3.svg.axis().scale(y).orient("left");
+
+		var line = d3.svg.line().interpolate("basis").x(function(d) {
+			return x(d.Time);
+		}).y(function(d) {
+			return y(d.Highway);
+		});
+
+		var svg = d3.select("body").append("svg").attr("width",
+				width + margin.left + margin.right).attr("height",
+				height + margin.top + margin.bottom).append("g").attr(
+				"transform",
+				"translate(" + margin.left + "," + margin.top + ")");
+
+		d3.csv("../output_files/highway_info.csv", function(error, data) {
+			if (error)
+				throw error;
+
+			color.domain(d3.keys(data[0]).filter(function(key) {
+				return key !== "Time";
+			}));
+
+			data.forEach(function(d) {
+				d.Time = +(new Date(d.Time));
+			});
+
+			var highwaySpeeds = color.domain().map(function(name) {
+				return {
+					name : name,
+					values : data.map(function(d) {
+						return {
+							Time : new Date(d.Time),
+							Highway : +d[name]
+						};
+					})
+				};
+			});
+
+			/* x.domain(d3.extent(data, function(d) {
+				return d.Time;
+			})); */
+
+			x.domain([
+					new Date(data[0].Time),
+					d3.time.minute.offset(new Date(data[data.length - 1].Time),
+							1) ]);
+			xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(
+					d3.time.minute, 1).tickFormat(d3.time.format('%I:%M %p'))
+					.tickSize(0).tickPadding(8);
+
+			y.domain([ d3.min(highwaySpeeds, function(c) {
+				return d3.min(c.values, function(v) {
+					return v.Highway;
+				});
+			}) - 5, d3.max(highwaySpeeds, function(c) {
+				return d3.max(c.values, function(v) {
+					return v.Highway;
+				});
+			}) + 5 ]);
+
+			svg.append("g").attr("class", "x axis").attr("transform",
+					"translate(0," + height + ")").call(xAxis).append("text")
+					.attr("class", "label").attr("x", width).attr("y", -6)
+					.style("text-anchor", "end").text("Time (in Boston MA)").style(
+							"font-size", "15px");
+
+			svg.append("g").attr("class", "y axis").call(yAxis).append("text")
+					.attr("transform", "rotate(0)").attr("y", 6).attr("dy",
+							".71em").style("text-anchor", "after-edge").text("Speed (in MPH)")
+					.style("font-size", "15px");
+
+			var highwaySpeedType = svg.selectAll(".highwaySpeedType").data(
+					highwaySpeeds).enter().append("g").attr("class",
+					"highwaySpeedType");
+
+			highwaySpeedType.append("path").attr("class", "line").attr("d",
+					function(d) {
+						return line(d.values);
+					}).style("stroke", function(d) {
+				return color(d.name);
+			});
+
+			highwaySpeedType.append("text").datum(function(d) {
+				return {
+					name : d.name,
+					value : d.values[d.values.length - 1]
+				};
+			}).style("fill", function(d) {
+				return color(d.name);
+			}).attr(
+					"transform",
+					function(d) {
+						return "translate(" + x(d.value.Time) + ","
+								+ y(d.value.Highway) + ")";
+					}).attr("x", 3).attr("y", ".35em").text(function(d) {
+				return d.name;
+			});
+		});
+	</script>
