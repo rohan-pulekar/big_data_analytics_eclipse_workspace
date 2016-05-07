@@ -40,3 +40,13 @@ java.lang.IllegalArgumentException: The PutObjectRequest parameter must be speci
 16/05/07 02:19:44 WARN StreamingContext: spark.master should be set as local[n], n > 1 in local mode if you have receivers to get data, otherwise Spark jobs will not get resources to process the received data.
 16/05/07 02:20:56 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 16/05/07 02:20:57 WARN StreamingContext: spark.master should be set as local[n], n > 1 in local mode if you have receivers to get data, otherwise Spark jobs will not get resources to process the received data.
+16/05/07 11:05:34 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+16/05/07 11:05:34 ERROR SparkContext: Error initializing SparkContext.
+org.apache.spark.SparkException: A master URL must be set in your configuration
+	at org.apache.spark.SparkContext.<init>(SparkContext.scala:401)
+	at org.apache.spark.api.java.JavaSparkContext.<init>(JavaSparkContext.scala:59)
+	at e63.course.final_project.HighwayInfoKafkaSlidingWIndowConsumer.main(HighwayInfoKafkaSlidingWIndowConsumer.java:86)
+16/05/07 11:06:02 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+16/05/07 11:06:04 WARN StreamingContext: spark.master should be set as local[n], n > 1 in local mode if you have receivers to get data, otherwise Spark jobs will not get resources to process the received data.
+16/05/07 11:07:34 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+16/05/07 11:07:35 WARN StreamingContext: spark.master should be set as local[n], n > 1 in local mode if you have receivers to get data, otherwise Spark jobs will not get resources to process the received data.

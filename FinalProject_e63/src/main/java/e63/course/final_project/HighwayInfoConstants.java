@@ -16,8 +16,8 @@ public class HighwayInfoConstants {
 	public static final DecimalFormat DECIMAL_FORMAT_WITH_ROUNDING = new DecimalFormat("#.#");
 	public static final String S3_BUCKET__NAME = "e63-course-final-project";
 	public static final String S3_BUCKET_CSV_FILE_OBJECT = "output_files/highway_info.csv";
-	public static final String AWS_ACCESS_KEY_ID = "AKIAJXBSANIRLCLEFMTA";
-	public static final String AWS_SECRET_KEY = "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";
+	public static final String AWS_ACCESS_KEY_ID = "";
+	public static final String AWS_SECRET_KEY = "";
 	public static Map<Integer, MassachusettsHighway> highWayXMLFeedMap = new HashMap<Integer, MassachusettsHighway>();
 
 	static {

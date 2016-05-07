@@ -78,7 +78,7 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 		String zookeeper = args[2];
 
 		// Create a Java Spark Config.
-		SparkConf sparkConf = new SparkConf().setAppName("HighwayInfoKafkaSlidingWIndowConsumer");
+		SparkConf sparkConf = new SparkConf().setMaster("local").setAppName("HighwayInfoKafkaSlidingWIndowConsumer");
 		// sparkConf.setMaster("local[5]"); // this is to run the program as a
 		// standalone java application
 
