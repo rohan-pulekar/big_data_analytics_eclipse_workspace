@@ -1,4 +1,4 @@
-package e63.course.final_project;
+package ee6.course.streaming.utils;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -18,15 +18,43 @@ import org.w3c.dom.NodeList;
 
 import e63.course.dtos.MassachusettsHighway;
 
-public class XmlFileProcessor {
-	public static Map<MassachusettsHighway, Float> processLiveXmlStream() throws Exception {
-		Map<MassachusettsHighway, List<Float>> highwayAndSpeedsListMap = new HashMap<MassachusettsHighway, List<Float>>();
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		DocumentBuilder db = dbf.newDocumentBuilder();
+/**
+ * This class is for processing live xml feed. The XML feed that will be
+ * processed is Mass DOT live highway speed xml feed
+ * 
+ * This class is part of final project of e63 course (Big Data Analytics) of
+ * Harvard Extension School
+ * 
+ * @author Rohan Pulekar
+ *
+ */
+public class LiveXmlFeedProcessor {
 
-		Document doc = db
-				.parse(new URL("https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx").openStream());
-		NodeList btDataNodes = doc.getElementsByTagName("btdata");
+	/**
+	 * This function processes live xml stream and returns a map of Highway and
+	 * speed
+	 * 
+	 * @return map <highway-name average-speed>
+	 * @throws Exception
+	 */
+	public static Map<MassachusettsHighway, Float> processLiveXmlStream() throws Exception {
+
+		// initalize a map of highway and speeds
+		Map<MassachusettsHighway, List<Float>> highwayAndSpeedsListMap = new HashMap<MassachusettsHighway, List<Float>>();
+
+		// create a document builder factory
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+
+		// create an instance of document builder
+		DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+
+		// create a document of the current live xml feed
+		Document document = documentBuilder
+				.parse(new URL(HighwayInfoConstants.MASS_DOT_LIVE_XML_FEED_LINK).openStream());
+
+		// start processing of the xml document to get average speed on the
+		// highway
+		NodeList btDataNodes = document.getElementsByTagName("btdata");
 
 		if (btDataNodes != null && btDataNodes.getLength() > 0) {
 			Element rootElement = (Element) btDataNodes.item(0);
@@ -59,16 +87,12 @@ public class XmlFileProcessor {
 								String speedAsString = speedNodesList.item(0).getTextContent();
 								if (StringUtils.isNotBlank(speedAsString) && NumberUtils.isNumber(speedAsString)) {
 									float speed = Float.parseFloat(speedAsString);
-									// System.out.print(massacusettsHighway + "
-									// ");
-									// System.out.print(speed);
 									List<Float> listOfSpeeds = new ArrayList<Float>(1);
 									if (highwayAndSpeedsListMap.get(massacusettsHighway) != null) {
 										listOfSpeeds = highwayAndSpeedsListMap.get(massacusettsHighway);
 									}
 									listOfSpeeds.add(speed);
 									highwayAndSpeedsListMap.put(massacusettsHighway, listOfSpeeds);
-									// System.out.println();
 								}
 							}
 						}
@@ -76,21 +100,31 @@ public class XmlFileProcessor {
 				}
 			}
 		}
-		// System.out.println(highwayAndSpeedsListMap);
 
-		Map<MassachusettsHighway, Float> highwayAndSpeedMap = new HashMap<MassachusettsHighway, Float>();
+		// create map of highway and speed
+		Map<MassachusettsHighway, Float> highwayAndCurrentAvgSpeedMap = new HashMap<MassachusettsHighway, Float>();
+
+		// loop over the highway and speeds list map
 		for (Entry<MassachusettsHighway, List<Float>> entrySet : highwayAndSpeedsListMap.entrySet()) {
+
+			// get the list of numbers denoting speed for that highway
 			List<Float> listOfSpeeds = entrySet.getValue();
+
 			if (listOfSpeeds != null) {
 				float sumOfSpeeds = 0;
 				for (Float speed : listOfSpeeds) {
 					sumOfSpeeds += speed;
 				}
+
+				// get the average speed
 				float avergeSpeed = sumOfSpeeds / (listOfSpeeds.size());
-				highwayAndSpeedMap.put(entrySet.getKey(), avergeSpeed);
+
+				// put into the map the highway name and average speed
+				highwayAndCurrentAvgSpeedMap.put(entrySet.getKey(), avergeSpeed);
 			}
 		}
-		// System.out.println(highwayAndSpeedMap);
-		return highwayAndSpeedMap;
+
+		// return the highway and averge speed map
+		return highwayAndCurrentAvgSpeedMap;
 	}
 }

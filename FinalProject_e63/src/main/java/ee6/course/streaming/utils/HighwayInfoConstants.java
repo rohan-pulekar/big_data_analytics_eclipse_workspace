@@ -1,4 +1,4 @@
-package e63.course.final_project;
+package ee6.course.streaming.utils;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -11,6 +11,7 @@ import e63.course.dtos.MassachusettsHighway;
 public class HighwayInfoConstants {
 
 	public static final String CSV_OUTPUT_FILE_NAME = "output_files/highway_info.csv";
+	public static final String CSV_ML_FILE_NAME = "output_files/highway_info_for_ml.csv";
 	public static final DateFormat DATE_FORMATTER_FOR_TIME = new SimpleDateFormat("hh:mm a z");
 	public static final DateFormat DATE_FORMATTER_FOR_DATE_TIME = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss a");
 	public static final DecimalFormat DECIMAL_FORMAT_WITH_ROUNDING = new DecimalFormat("#.#");
@@ -18,6 +19,11 @@ public class HighwayInfoConstants {
 	public static final String S3_BUCKET_CSV_FILE_OBJECT = "output_files/highway_info.csv";
 	public static final String AWS_ACCESS_KEY_ID = "";
 	public static final String AWS_SECRET_KEY = "";
+	public static final String MASS_DOT_LIVE_XML_FEED_LINK = "https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx";
+	public static int STREAMING_BATCH_DURATION_IN_SECS = 300;// 5 mins
+	public static int WINDOW_DURATION_IN_SECS = 3600;// 60 mins = 1hr
+	public static int SLIDE_INTERVAL_IN_SECS = 300;// 5 mins
+	public static int NUMBER_OFRECORDS_TO_APPLY_PREDICTION_AFTER = 3;
 	public static Map<Integer, MassachusettsHighway> highWayXMLFeedMap = new HashMap<Integer, MassachusettsHighway>();
 
 	static {

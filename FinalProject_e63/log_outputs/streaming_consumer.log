@@ -1,0 +1,28 @@
+16/05/09 01:30:15 INFO HighwayInfoKafkaSlidingWIndowConsumer: Listening for kafka messages from localhost:9092  on topic:highway_info_kafka_topic2
+16/05/09 01:31:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:38:11 INFO HighwayInfoKafkaSlidingWIndowConsumer: Listening for kafka messages from localhost:9092  on topic:highway_info_kafka_topic2
+16/05/09 01:39:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:39:02 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:40:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:40:01 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:41:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:41:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:42:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:42:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:43:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:43:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:44:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:44:05 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:45:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:45:03 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:46:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:46:02 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:47:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:47:02 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:47:51 INFO HighwayInfoKafkaSlidingWIndowConsumer: Listening for kafka messages from localhost:9092  on topic:highway_info_kafka_topic2
+16/05/09 01:48:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:48:01 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:49:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:49:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file
+16/05/09 01:50:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: created new local csv file
+16/05/09 01:50:00 INFO HighwayInfoKafkaSlidingWIndowConsumer: wrote contents to the local csv and S3 file

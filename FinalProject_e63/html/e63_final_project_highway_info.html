@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<title>e63 Final Project (Rohan Pulekar)</title>
+<meta name="description"
+	content="This html file is for final project of e63 course (Big Data Analytics) at Harvard Extension School">
 <meta charset="utf-8">
 <style>
 body {
@@ -16,6 +19,13 @@ body {
 	stroke: steelblue;
 	stroke-width: 1.5px;
 }
+
+.dotted_line {
+	fill: none;
+	stroke: steelblue;
+	stroke-width: 1.5px;
+	stroke-dasharray: 2, 2;
+}
 </style>
 <body>
 	<script src="../js/d3/d3.min.js"></script>
@@ -25,7 +35,7 @@ body {
 			right : 80,
 			bottom : 30,
 			left : 100
-		}, width = 960 - margin.left - margin.right, height = 500 - margin.top
+		}, width = 1260 - margin.left - margin.right, height = 500 - margin.top
 				- margin.bottom;
 
 		var x = d3.time.scale().rangeRound([ 0, width ]);
@@ -83,9 +93,9 @@ body {
 			x.domain([
 					new Date(data[0].Time),
 					d3.time.minute.offset(new Date(data[data.length - 1].Time),
-							1) ]);
+							5) ]);
 			xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(
-					d3.time.minute, 1).tickFormat(d3.time.format('%I:%M %p'))
+					d3.time.minute, 5).tickFormat(d3.time.format('%I:%M %p'))
 					.tickSize(0).tickPadding(8);
 
 			y.domain([ d3.min(highwaySpeeds, function(c) {
@@ -93,6 +103,7 @@ body {
 					return v.Highway;
 				});
 			}) - 5, d3.max(highwaySpeeds, function(c) {
+				//console.log(c.values);
 				return d3.max(c.values, function(v) {
 					return v.Highway;
 				});
@@ -101,13 +112,13 @@ body {
 			svg.append("g").attr("class", "x axis").attr("transform",
 					"translate(0," + height + ")").call(xAxis).append("text")
 					.attr("class", "label").attr("x", width).attr("y", -6)
-					.style("text-anchor", "end").text("Time (in Boston MA)").style(
-							"font-size", "15px");
+					.style("text-anchor", "end").text("Time (in Boston MA)")
+					.style("font-size", "15px");
 
 			svg.append("g").attr("class", "y axis").call(yAxis).append("text")
 					.attr("transform", "rotate(0)").attr("y", 6).attr("dy",
-							".71em").style("text-anchor", "after-edge").text("Speed (in MPH)")
-					.style("font-size", "15px");
+							".71em").style("text-anchor", "after-edge").text(
+							"Speed (in MPH)").style("font-size", "15px");
 
 			var highwaySpeedType = svg.selectAll(".highwaySpeedType").data(
 					highwaySpeeds).enter().append("g").attr("class",
@@ -137,3 +148,15 @@ body {
 			});
 		});
 	</script>
+	<h2 style="color:RED">Refresh the page to get latest information</h2>
+	<h3>
+	This is the output of Final Project of e63 course (Big Data Analytics) submitted by Rohan Pulekar		
+	</h3>
+	<h2>What Big Data topic is the project about:</h2><h3>Spark streaming with Kafka and Spark Machine Learning</h3>
+	<h2>What is the information displayed in this graph:</h2><h3>This is real time average speed information of highways in Massachusetts</h3>
+	<h2>What is the primary source of this real time information:</h2>
+	<h3>Mass DOT live highway info feed: https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx</h3>
+	<h2>Prediction aspect:</h2>
+	<h3>The speed information displayed upto the current time is retrieved from the above feed.  The speed information displayed after the current time is speed prediction done
+	with Spark Machine Learning library Linear Regression API</h3>
+</body>
