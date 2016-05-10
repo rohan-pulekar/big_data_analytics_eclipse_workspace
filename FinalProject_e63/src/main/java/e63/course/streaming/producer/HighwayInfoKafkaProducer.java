@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import e63.course.dtos.HighwayInfoKafkaMessage;
 import e63.course.dtos.MassachusettsHighway;
 import ee6.course.streaming.utils.HighwayInfoConstants;
-import ee6.course.streaming.utils.LiveXmlFeedProcessor;
+import ee6.course.streaming.utils.LiveXmlFeedReader;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
@@ -84,12 +84,12 @@ public class HighwayInfoKafkaProducer {
 
 			// get time for EST (UTC -4)
 			Calendar calendar = Calendar.getInstance();
-			calendar.add(Calendar.HOUR, -4);
+			// calendar.add(Calendar.HOUR, -4);
 			Date time = calendar.getTime();
 
 			// process the live Mass DOT xml stream and highway and speed map
 			// out of it
-			Map<MassachusettsHighway, Float> highwayAndSpeedMap = LiveXmlFeedProcessor.processLiveXmlStream();
+			Map<MassachusettsHighway, Float> highwayAndSpeedMap = LiveXmlFeedReader.processLiveXmlStream();
 
 			if (highwayAndSpeedMap != null) {
 				// run a loop for each massachusetts highway

@@ -39,10 +39,10 @@ import scala.Tuple2;
  * @author Rohan Pulekar
  *
  */
-public class HighwayInfoKafkaSlidingWIndowConsumer {
+public class HighwayInfoKafkaSlidingWindowConsumer {
 
 	// initialize the logger that is based on slf4j library
-	private static final Logger LOGGER = LoggerFactory.getLogger(HighwayInfoKafkaSlidingWIndowConsumer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(HighwayInfoKafkaSlidingWindowConsumer.class);
 
 	// date format for printing times in log output
 	private static final DateFormat DATE_TIME_FORMAT = new SimpleDateFormat("hh:mm:ss");
@@ -79,7 +79,7 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 
 		// Create a Java Spark Config
 		SparkConf sparkConf = new SparkConf().setMaster("local[2]")
-				.setAppName(HighwayInfoKafkaSlidingWIndowConsumer.class.getSimpleName());
+				.setAppName(HighwayInfoKafkaSlidingWindowConsumer.class.getSimpleName());
 
 		// create spark context from the spark configuration
 		JavaSparkContext sparkContext = new JavaSparkContext(sparkConf);
@@ -99,7 +99,7 @@ public class HighwayInfoKafkaSlidingWIndowConsumer {
 		HashMap<String, String> kafkaInputDStreamParams = new HashMap<String, String>();
 		kafkaInputDStreamParams.put("metadata.broker.list", kafkaBrokers);
 		kafkaInputDStreamParams.put("zookeeper.connect", zookeeper);
-		kafkaInputDStreamParams.put("group.id", HighwayInfoKafkaSlidingWIndowConsumer.class.getSimpleName());
+		kafkaInputDStreamParams.put("group.id", HighwayInfoKafkaSlidingWindowConsumer.class.getSimpleName());
 
 		// print messages
 		System.out.println("Listening for kafka messages from " + kafkaBrokers + "  on topic:" + kafkaTopic);

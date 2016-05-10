@@ -118,7 +118,7 @@ body {
 			svg.append("g").attr("class", "y axis").call(yAxis).append("text")
 					.attr("transform", "rotate(0)").attr("y", 6).attr("dy",
 							".71em").style("text-anchor", "after-edge").text(
-							"Speed (in MPH)").style("font-size", "15px");
+							"Average Speed (in MPH)").style("font-size", "15px");
 
 			var highwaySpeedType = svg.selectAll(".highwaySpeedType").data(
 					highwaySpeeds).enter().append("g").attr("class",

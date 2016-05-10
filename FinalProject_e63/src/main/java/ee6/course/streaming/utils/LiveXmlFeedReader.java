@@ -28,7 +28,7 @@ import e63.course.dtos.MassachusettsHighway;
  * @author Rohan Pulekar
  *
  */
-public class LiveXmlFeedProcessor {
+public class LiveXmlFeedReader {
 
 	/**
 	 * This function processes live xml stream and returns a map of Highway and

@@ -17,8 +17,8 @@ public class HighwayInfoConstants {
 	public static final DecimalFormat DECIMAL_FORMAT_WITH_ROUNDING = new DecimalFormat("#.#");
 	public static final String S3_BUCKET__NAME = "e63-course-final-project";
 	public static final String S3_BUCKET_CSV_FILE_OBJECT = "output_files/highway_info.csv";
-	public static final String AWS_ACCESS_KEY_ID = "";
-	public static final String AWS_SECRET_KEY = "";
+	public static final String AWS_ACCESS_KEY_ID = "AKIAJXBSANIRLCLEFMTA";
+	public static final String AWS_SECRET_KEY = "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";
 	public static final String MASS_DOT_LIVE_XML_FEED_LINK = "https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx";
 	public static int STREAMING_BATCH_DURATION_IN_SECS = 300;// 5 mins
 	public static int WINDOW_DURATION_IN_SECS = 3600;// 60 mins = 1hr

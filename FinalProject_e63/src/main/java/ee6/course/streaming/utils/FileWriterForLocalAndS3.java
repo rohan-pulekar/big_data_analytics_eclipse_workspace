@@ -134,7 +134,8 @@ public class FileWriterForLocalAndS3 implements Serializable {
 
 		if (mapOfTimeAndHighwaySpeeds.entrySet()
 				.size() > HighwayInfoConstants.NUMBER_OFRECORDS_TO_APPLY_PREDICTION_AFTER) {
-			FutureSpeedPredictorWithSparkML.addSpeedPredictions(mapOfTimeAndHighwaySpeeds, sqlContext);
+			// FutureSpeedPredictorWithSparkML.addSpeedPredictions(mapOfTimeAndHighwaySpeeds,
+			// sqlContext);
 		}
 
 		// create the file writer for CSV file
