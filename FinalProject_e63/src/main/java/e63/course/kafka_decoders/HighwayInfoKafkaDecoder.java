@@ -8,6 +8,15 @@ import java.io.ObjectInputStream;
 import e63.course.dtos.HighwayInfoKafkaMessage;
 import kafka.serializer.Decoder;
 
+/**
+ * This is a class for Kafka decoding of Highway Info class
+ * 
+ * This class is part of final project of e63 course (Big Data Analytics) of
+ * Harvard Extension School
+ * 
+ * @author Rohan Pulekar
+ *
+ */
 public class HighwayInfoKafkaDecoder implements Decoder<HighwayInfoKafkaMessage> {
 
 	public HighwayInfoKafkaDecoder(kafka.utils.VerifiableProperties properties) {

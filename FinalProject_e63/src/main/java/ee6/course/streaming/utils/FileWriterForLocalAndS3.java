@@ -133,7 +133,7 @@ public class FileWriterForLocalAndS3 implements Serializable {
 	public static void flushBufferToLocalAndS3Files(SQLContext sqlContext) throws IOException {
 
 		if (mapOfTimeAndHighwaySpeeds.entrySet()
-				.size() > HighwayInfoConstants.NUMBER_OFRECORDS_TO_APPLY_PREDICTION_AFTER) {
+				.size() > HighwayInfoConstants.NUMBER_OF_RECORDS_TO_APPLY_PREDICTION_AFTER) {
 			// FutureSpeedPredictorWithSparkML.addSpeedPredictions(mapOfTimeAndHighwaySpeeds,
 			// sqlContext);
 		}

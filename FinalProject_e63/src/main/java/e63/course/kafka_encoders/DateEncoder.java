@@ -8,6 +8,15 @@ import java.util.Date;
 
 import kafka.serializer.Encoder;
 
+/**
+ * This class is used for Kafka encoding of Date object
+ * 
+ * This class is part of final project of e63 course (Big Data Analytics) of
+ * Harvard Extension School
+ * 
+ * @author Rohan Pulekar
+ *
+ */
 public class DateEncoder implements Encoder<Date> {
 
 	public DateEncoder(kafka.utils.VerifiableProperties properties) {

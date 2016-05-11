@@ -2,6 +2,15 @@ package e63.course.dtos;
 
 import java.io.Serializable;
 
+/**
+ * This is an encapsulation class to hold highway and speed.
+ * 
+ * This class is part of final project of e63 course (Big Data Analytics) of
+ * Harvard Extension School
+ * 
+ * @author Rohan Pulekar
+ *
+ */
 public class HighwayInfoKafkaMessage implements Serializable, Comparable<HighwayInfoKafkaMessage> {
 	private static final long serialVersionUID = 1L;
 

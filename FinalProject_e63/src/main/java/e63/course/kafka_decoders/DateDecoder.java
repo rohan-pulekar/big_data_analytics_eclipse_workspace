@@ -8,6 +8,15 @@ import java.util.Date;
 
 import kafka.serializer.Decoder;
 
+/**
+ * This is a class for Kafka decoding the Date object
+ * 
+ * This class is part of final project of e63 course (Big Data Analytics) of
+ * Harvard Extension School
+ * 
+ * @author Rohan Pulekar
+ *
+ */
 public class DateDecoder implements Decoder<Date> {
 
 	public DateDecoder(kafka.utils.VerifiableProperties properties) {
