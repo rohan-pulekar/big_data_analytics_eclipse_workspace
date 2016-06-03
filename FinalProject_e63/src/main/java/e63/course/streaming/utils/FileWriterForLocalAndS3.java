@@ -1,4 +1,4 @@
-package ee6.course.streaming.utils;
+package e63.course.streaming.utils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,7 @@ import com.amazonaws.services.s3.model.Permission;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 
 import e63.course.dtos.HighwayInfoKafkaMessage;
+import e63.course.dtos.MassachusettsHighway;
 import scala.Tuple2;
 
 /**
@@ -91,6 +93,10 @@ public class FileWriterForLocalAndS3 implements Serializable {
 	 */
 	public static void addTupleToFileWriteBuffer(Tuple2<Date, HighwayInfoKafkaMessage> tupleToBeWrittenToCSV) {
 
+		if (tupleToBeWrittenToCSV == null || tupleToBeWrittenToCSV._1 == null || tupleToBeWrittenToCSV._2 == null) {
+			return;
+		}
+
 		// create a blank list of highway info kafka messages
 		List<HighwayInfoKafkaMessage> listOfHighwayInfoKafkaMessages = null;
 
@@ -118,7 +124,10 @@ public class FileWriterForLocalAndS3 implements Serializable {
 		listOfHighwayInfoKafkaMessages.add(tupleToBeWrittenToCSV._2);
 
 		// add the header to the list of headers
-		csvHeaders.add(tupleToBeWrittenToCSV._2.getHighway().getDisplayName());
+		if (tupleToBeWrittenToCSV._2 != null && tupleToBeWrittenToCSV._2.getHighway() != null
+				&& tupleToBeWrittenToCSV._2.getHighway().getDisplayName() != null) {
+			csvHeaders.add(tupleToBeWrittenToCSV._2.getHighway().getDisplayName());
+		}
 
 		// add the date and highway info kafka messages list to the
 		// mapOfDateAndHighwayInfo
@@ -132,10 +141,11 @@ public class FileWriterForLocalAndS3 implements Serializable {
 	 */
 	public static void flushBufferToLocalAndS3Files(SQLContext sqlContext) throws IOException {
 
+		cleanTimeAndHighwaysSpeedData();
+
 		if (mapOfTimeAndHighwaySpeeds.entrySet()
 				.size() > HighwayInfoConstants.NUMBER_OF_RECORDS_TO_APPLY_PREDICTION_AFTER) {
-			// FutureSpeedPredictorWithSparkML.addSpeedPredictions(mapOfTimeAndHighwaySpeeds,
-			// sqlContext);
+			FutureSpeedPredictorWithSparkML.addSpeedPredictions(mapOfTimeAndHighwaySpeeds, sqlContext);
 		}
 
 		// create the file writer for CSV file
@@ -147,15 +157,21 @@ public class FileWriterForLocalAndS3 implements Serializable {
 		// run a loop for each entry in date and highway info
 		for (Map.Entry<Date, List<HighwayInfoKafkaMessage>> entry : mapOfTimeAndHighwaySpeeds.entrySet()) {
 
+			if (entry == null || entry.getKey() == null || entry.getValue() == null) {
+				continue;
+			}
+
 			// write the time to csv file
 			csvOutputFileWriter.write(HighwayInfoConstants.DATE_FORMATTER_FOR_DATE_TIME.format(entry.getKey()));
 
 			// run a loop for each highwayInfoKafka message
 			for (HighwayInfoKafkaMessage highwayInfoKafkaMessage : entry.getValue()) {
-				csvOutputFileWriter.append(',');
-				// write the speed to csv file
-				csvOutputFileWriter.append(
-						HighwayInfoConstants.DECIMAL_FORMAT_WITH_ROUNDING.format(highwayInfoKafkaMessage.getSpeed()));
+				if (highwayInfoKafkaMessage != null) {
+					csvOutputFileWriter.append(',');
+					// write the speed to csv file
+					csvOutputFileWriter.append(HighwayInfoConstants.DECIMAL_FORMAT_WITH_ROUNDING
+							.format(highwayInfoKafkaMessage.getSpeed()));
+				}
 			}
 
 			// write a newline character to the csv file
@@ -167,10 +183,12 @@ public class FileWriterForLocalAndS3 implements Serializable {
 		csvOutputFileWriter.close();
 
 		// call the function to delete the csv file from S3
-		deleteCSVFileFromS3();
+		// deleteCSVFileFromS3();
 
 		// upload the newly created csv file to S3
-		uploadCSVFileToS3();
+		// This is commented out for now, as it is needed only when the
+		// application is deployed to AWS
+		// uploadCSVFileToS3();
 	}
 
 	/**
@@ -183,8 +201,10 @@ public class FileWriterForLocalAndS3 implements Serializable {
 		csvOutputFileWriter.append("Time");
 		System.out.println("csvHeaders:" + csvHeaders);
 		for (String csvHeader : csvHeaders) {
-			csvOutputFileWriter.append(',');
-			csvOutputFileWriter.append(csvHeader);
+			if (csvHeader != null) {
+				csvOutputFileWriter.append(',');
+				csvOutputFileWriter.append(csvHeader);
+			}
 		}
 		csvOutputFileWriter.append('\n');
 	}
@@ -249,6 +269,76 @@ public class FileWriterForLocalAndS3 implements Serializable {
 			System.out.println("Error Message: " + ace.getMessage());
 			ace.printStackTrace();
 			LOGGER.error("Exception occured in uploadCSVFileToS3", ace);
+		}
+	}
+
+	/**
+	 * clean up the aggregated highway info data
+	 */
+	private static void cleanTimeAndHighwaysSpeedData() {
+
+		for (MassachusettsHighway highway : MassachusettsHighway.values()) {
+			boolean isHighwayPresentInAllRows = isHighwayPresentInAllRows(highway);
+			if (!isHighwayPresentInAllRows) {
+				// this means the highway speed info is not present in all rows
+				removeHighwayFromAllRows(highway);
+				csvHeaders.remove(highway.getDisplayName());
+			}
+		}
+	}
+
+	/**
+	 * Check if highway sped info is present in all rows Each row is for a
+	 * timestamp
+	 * 
+	 * @param highway
+	 * @return boolean (whether highway speed info is present in all rows)
+	 */
+	private static boolean isHighwayPresentInAllRows(MassachusettsHighway highway) {
+		if (mapOfTimeAndHighwaySpeeds != null) {
+			for (Map.Entry<Date, List<HighwayInfoKafkaMessage>> timeAndHighwayMapEntry : mapOfTimeAndHighwaySpeeds
+					.entrySet()) {
+				if (timeAndHighwayMapEntry == null || timeAndHighwayMapEntry.getValue() == null) {
+					continue;
+				}
+				List<HighwayInfoKafkaMessage> highwayKafkaInfoMessages = timeAndHighwayMapEntry.getValue();
+				if (highwayKafkaInfoMessages != null) {
+					boolean highwayPresentInCurrentRow = false;
+					for (HighwayInfoKafkaMessage highwayKafkaInfoMessage : highwayKafkaInfoMessages) {
+						if (highwayKafkaInfoMessage != null && highwayKafkaInfoMessage.getHighway().equals(highway)) {
+							highwayPresentInCurrentRow = true;
+							break;
+						}
+					}
+					if (!highwayPresentInCurrentRow) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * This function is to remove the highway from all rows. Each row is for a
+	 * timestamp
+	 * 
+	 * @param highway
+	 */
+	private static void removeHighwayFromAllRows(MassachusettsHighway highway) {
+		for (Map.Entry<Date, List<HighwayInfoKafkaMessage>> timeAndHighwayMapEntry : mapOfTimeAndHighwaySpeeds
+				.entrySet()) {
+			List<HighwayInfoKafkaMessage> highwayKafkaInfoMessages = timeAndHighwayMapEntry.getValue();
+			if (highwayKafkaInfoMessages != null) {
+				for (Iterator<HighwayInfoKafkaMessage> highwayKafkaInfoMessagesIterator = highwayKafkaInfoMessages
+						.iterator(); highwayKafkaInfoMessagesIterator.hasNext();) {
+					HighwayInfoKafkaMessage highwayKafkaInfoMessage = highwayKafkaInfoMessagesIterator.next();
+
+					if (highwayKafkaInfoMessage != null && highwayKafkaInfoMessage.getHighway().equals(highway)) {
+						highwayKafkaInfoMessagesIterator.remove();
+					}
+				}
+			}
 		}
 	}
 }

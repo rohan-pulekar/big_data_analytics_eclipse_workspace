@@ -1,4 +1,4 @@
-package ee6.course.streaming.utils;
+package e63.course.streaming.utils;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,10 +37,10 @@ public class LiveXmlFeedReader {
 	 * @return map <highway-name average-speed>
 	 * @throws Exception
 	 */
-	public static Map<MassachusettsHighway, Float> processLiveXmlStream() throws Exception {
+	public static Map<MassachusettsHighway, Double> processLiveXmlStream() throws Exception {
 
 		// initalize a map of highway and speeds
-		Map<MassachusettsHighway, List<Float>> highwayAndSpeedsListMap = new HashMap<MassachusettsHighway, List<Float>>();
+		Map<MassachusettsHighway, List<Double>> highwayAndSpeedsListMap = new HashMap<MassachusettsHighway, List<Double>>();
 
 		// create a document builder factory
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -86,8 +86,8 @@ public class LiveXmlFeedReader {
 									&& speedNodesList.item(0) != null) {
 								String speedAsString = speedNodesList.item(0).getTextContent();
 								if (StringUtils.isNotBlank(speedAsString) && NumberUtils.isNumber(speedAsString)) {
-									float speed = Float.parseFloat(speedAsString);
-									List<Float> listOfSpeeds = new ArrayList<Float>(1);
+									double speed = Double.parseDouble(speedAsString);
+									List<Double> listOfSpeeds = new ArrayList<Double>(1);
 									if (highwayAndSpeedsListMap.get(massacusettsHighway) != null) {
 										listOfSpeeds = highwayAndSpeedsListMap.get(massacusettsHighway);
 									}
@@ -102,22 +102,22 @@ public class LiveXmlFeedReader {
 		}
 
 		// create map of highway and speed
-		Map<MassachusettsHighway, Float> highwayAndCurrentAvgSpeedMap = new HashMap<MassachusettsHighway, Float>();
+		Map<MassachusettsHighway, Double> highwayAndCurrentAvgSpeedMap = new HashMap<MassachusettsHighway, Double>();
 
 		// loop over the highway and speeds list map
-		for (Entry<MassachusettsHighway, List<Float>> entrySet : highwayAndSpeedsListMap.entrySet()) {
+		for (Entry<MassachusettsHighway, List<Double>> entrySet : highwayAndSpeedsListMap.entrySet()) {
 
 			// get the list of numbers denoting speed for that highway
-			List<Float> listOfSpeeds = entrySet.getValue();
+			List<Double> listOfSpeeds = entrySet.getValue();
 
 			if (listOfSpeeds != null) {
-				float sumOfSpeeds = 0;
-				for (Float speed : listOfSpeeds) {
+				Double sumOfSpeeds = 0d;
+				for (Double speed : listOfSpeeds) {
 					sumOfSpeeds += speed;
 				}
 
 				// get the average speed
-				float avergeSpeed = sumOfSpeeds / (listOfSpeeds.size());
+				double avergeSpeed = sumOfSpeeds / (listOfSpeeds.size());
 
 				// put into the map the highway name and average speed
 				highwayAndCurrentAvgSpeedMap.put(entrySet.getKey(), avergeSpeed);

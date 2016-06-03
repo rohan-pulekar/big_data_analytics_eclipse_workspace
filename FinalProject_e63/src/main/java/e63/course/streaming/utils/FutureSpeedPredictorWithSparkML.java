@@ -1,4 +1,4 @@
-package ee6.course.streaming.utils;
+package e63.course.streaming.utils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -126,7 +126,7 @@ public class FutureSpeedPredictorWithSparkML {
 				}
 
 				// get the predicted speed from the list
-				float predictedSpeed = (float) (listOfPredictedSpeeds.get(counter).doubleValue());
+				double predictedSpeed = (listOfPredictedSpeeds.get(counter).doubleValue());
 
 				// create a new highway kafka message containing the predicted
 				// speed

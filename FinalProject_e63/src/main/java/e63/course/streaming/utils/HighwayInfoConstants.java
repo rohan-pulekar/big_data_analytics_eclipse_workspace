@@ -1,4 +1,4 @@
-package ee6.course.streaming.utils;
+package e63.course.streaming.utils;
 
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -21,9 +21,9 @@ public class HighwayInfoConstants {
 	public static final String AWS_SECRET_KEY = "LRlEA3PktVsHRpXG5LCzfPjfHphcEq2tHHcHfR7B";
 	public static final String MASS_DOT_LIVE_XML_FEED_LINK = "https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx";
 	public static final int STREAMING_BATCH_DURATION_IN_SECS = 300;// 5 mins
-	public static final int WINDOW_DURATION_IN_SECS = 3600;// 60 mins = 1hr
+	public static final int WINDOW_DURATION_IN_SECS = 3000;// 50 mins
 	public static final int SLIDE_INTERVAL_IN_SECS = 300;// 5 mins
-	public static final int NUMBER_OF_RECORDS_TO_APPLY_PREDICTION_AFTER = 3;
+	public static final int NUMBER_OF_RECORDS_TO_APPLY_PREDICTION_AFTER = 5;
 	public static Map<Integer, MassachusettsHighway> highWayXMLFeedMap = new HashMap<Integer, MassachusettsHighway>();
 
 	static {

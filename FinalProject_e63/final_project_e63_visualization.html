@@ -28,8 +28,9 @@ body {
 }
 </style>
 <body>
-	<script src="../js/d3/d3.min.js"></script>
+	<script src="https://d3js.org/d3.v3.min.js"></script>
 	<script>
+		// create margins for the graph
 		var margin = {
 			top : 20,
 			right : 80,
@@ -38,34 +39,43 @@ body {
 		}, width = 1260 - margin.left - margin.right, height = 500 - margin.top
 				- margin.bottom;
 
+		// create the x scale
 		var x = d3.time.scale().rangeRound([ 0, width ]);
 
+		// create y scale
 		var y = d3.scale.linear().range([ height, 0 ]);
 
+		// get the color scale
 		var color = d3.scale.category10();
 
+		// create x axis
 		var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(d3.time.days,
 				1).tickFormat(d3.time.format('%a %d')).tickSize(0).tickPadding(
 				8);
 
+		// create y axis
 		var yAxis = d3.svg.axis().scale(y).orient("left");
 
+		// create the axis line
 		var line = d3.svg.line().interpolate("basis").x(function(d) {
 			return x(d.Time);
 		}).y(function(d) {
 			return y(d.Highway);
 		});
 
+		// create the svg componenet got graph
 		var svg = d3.select("body").append("svg").attr("width",
 				width + margin.left + margin.right).attr("height",
 				height + margin.top + margin.bottom).append("g").attr(
 				"transform",
 				"translate(" + margin.left + "," + margin.top + ")");
 
-		d3.csv("../output_files/highway_info.csv", function(error, data) {
+		// read the input csv file
+		d3.csv("output_files/highway_info.csv", function(error, data) {
 			if (error)
 				throw error;
 
+			// create a color domain corresponding to each highway
 			color.domain(d3.keys(data[0]).filter(function(key) {
 				return key !== "Time";
 			}));
@@ -74,6 +84,7 @@ body {
 				d.Time = +(new Date(d.Time));
 			});
 
+			// create the domain map for time and highway
 			var highwaySpeeds = color.domain().map(function(name) {
 				return {
 					name : name,
@@ -86,44 +97,47 @@ body {
 				};
 			});
 
-			/* x.domain(d3.extent(data, function(d) {
-				return d.Time;
-			})); */
-
+			// create the x axis domain
 			x.domain([
 					new Date(data[0].Time),
 					d3.time.minute.offset(new Date(data[data.length - 1].Time),
 							5) ]);
+			
+			// set the values on x axis
 			xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(
 					d3.time.minute, 5).tickFormat(d3.time.format('%I:%M %p'))
 					.tickSize(0).tickPadding(8);
 
+			// create y axis domain
 			y.domain([ d3.min(highwaySpeeds, function(c) {
 				return d3.min(c.values, function(v) {
 					return v.Highway;
 				});
 			}) - 5, d3.max(highwaySpeeds, function(c) {
-				//console.log(c.values);
 				return d3.max(c.values, function(v) {
 					return v.Highway;
 				});
 			}) + 5 ]);
 
+			// use svg to plot the x axis
 			svg.append("g").attr("class", "x axis").attr("transform",
 					"translate(0," + height + ")").call(xAxis).append("text")
 					.attr("class", "label").attr("x", width).attr("y", -6)
 					.style("text-anchor", "end").text("Time (in Boston MA)")
 					.style("font-size", "15px");
 
+			// use svg to plot the y axis
 			svg.append("g").attr("class", "y axis").call(yAxis).append("text")
 					.attr("transform", "rotate(0)").attr("y", 6).attr("dy",
 							".71em").style("text-anchor", "after-edge").text(
 							"Average Speed (in MPH)").style("font-size", "15px");
 
+			// read the highway speed data from csv
 			var highwaySpeedType = svg.selectAll(".highwaySpeedType").data(
 					highwaySpeeds).enter().append("g").attr("class",
 					"highwaySpeedType");
 
+			// create the lines on graph for each highway
 			highwaySpeedType.append("path").attr("class", "line").attr("d",
 					function(d) {
 						return line(d.values);
@@ -131,6 +145,7 @@ body {
 				return color(d.name);
 			});
 
+			// add text for each line which will be name of the highway
 			highwaySpeedType.append("text").datum(function(d) {
 				return {
 					name : d.name,
@@ -147,12 +162,13 @@ body {
 				return d.name;
 			});
 		});
+		
 	</script>
-	<h2 style="color:RED">Refresh the page to get latest information</h2>
+	<h2 style="color:RED">Refresh the page to get latest information.      The speed information shown after the current timestamp is the speed predicted using Spark Machine Learning</h2>
 	<h3>
 	This is the output of Final Project of e63 course (Big Data Analytics) submitted by Rohan Pulekar		
 	</h3>
-	<h2>What Big Data topic is the project about:</h2><h3>Spark streaming with Kafka and Spark Machine Learning</h3>
+	<h2>Topic for the project:</h2><h3>Spark: Event Stream Processing and Machine Learning</h3>
 	<h2>What is the information displayed in this graph:</h2><h3>This is real time average speed information of highways in Massachusetts</h3>
 	<h2>What is the primary source of this real time information:</h2>
 	<h3>Mass DOT live highway info feed: https://www.massdot.state.ma.us/feeds/traveltimes/RTTM_feed.aspx</h3>

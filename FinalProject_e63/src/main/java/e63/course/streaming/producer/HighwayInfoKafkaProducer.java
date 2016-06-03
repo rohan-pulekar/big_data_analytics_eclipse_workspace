@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import e63.course.dtos.HighwayInfoKafkaMessage;
 import e63.course.dtos.MassachusettsHighway;
-import ee6.course.streaming.utils.HighwayInfoConstants;
-import ee6.course.streaming.utils.LiveXmlFeedReader;
+import e63.course.streaming.utils.HighwayInfoConstants;
+import e63.course.streaming.utils.LiveXmlFeedReader;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
@@ -89,11 +89,11 @@ public class HighwayInfoKafkaProducer {
 
 			// process the live Mass DOT xml stream and highway and speed map
 			// out of it
-			Map<MassachusettsHighway, Float> highwayAndSpeedMap = LiveXmlFeedReader.processLiveXmlStream();
+			Map<MassachusettsHighway, Double> highwayAndSpeedMap = LiveXmlFeedReader.processLiveXmlStream();
 
 			if (highwayAndSpeedMap != null) {
 				// run a loop for each massachusetts highway
-				for (Entry<MassachusettsHighway, Float> entry : highwayAndSpeedMap.entrySet()) {
+				for (Entry<MassachusettsHighway, Double> entry : highwayAndSpeedMap.entrySet()) {
 
 					// create a new highway info kafka message which will store
 					// highway name and average speed on the highway

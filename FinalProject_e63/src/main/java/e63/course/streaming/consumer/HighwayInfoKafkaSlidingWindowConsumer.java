@@ -24,8 +24,8 @@ import org.slf4j.LoggerFactory;
 import e63.course.dtos.HighwayInfoKafkaMessage;
 import e63.course.kafka_decoders.DateDecoder;
 import e63.course.kafka_decoders.HighwayInfoKafkaDecoder;
-import ee6.course.streaming.utils.FileWriterForLocalAndS3;
-import ee6.course.streaming.utils.HighwayInfoConstants;
+import e63.course.streaming.utils.FileWriterForLocalAndS3;
+import e63.course.streaming.utils.HighwayInfoConstants;
 import scala.Tuple2;
 
 /**
@@ -78,7 +78,7 @@ public class HighwayInfoKafkaSlidingWindowConsumer {
 		String zookeeper = args[2];
 
 		// Create a Java Spark Config
-		SparkConf sparkConf = new SparkConf().setMaster("local[2]")
+		SparkConf sparkConf = new SparkConf().setMaster("local")
 				.setAppName(HighwayInfoKafkaSlidingWindowConsumer.class.getSimpleName());
 
 		// create spark context from the spark configuration
@@ -156,6 +156,8 @@ public class HighwayInfoKafkaSlidingWindowConsumer {
 
 				@Override
 				public void call(Tuple2<Date, HighwayInfoKafkaMessage> tuple) throws Exception {
+
+					System.out.println("tuple:" + tuple._1 + ":" + tuple._2);
 
 					// add the RDD tuple to file writer buffer
 					FileWriterForLocalAndS3.addTupleToFileWriteBuffer(tuple);

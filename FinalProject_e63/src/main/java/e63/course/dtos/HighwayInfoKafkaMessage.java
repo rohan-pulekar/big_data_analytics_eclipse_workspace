@@ -14,7 +14,7 @@ import java.io.Serializable;
 public class HighwayInfoKafkaMessage implements Serializable, Comparable<HighwayInfoKafkaMessage> {
 	private static final long serialVersionUID = 1L;
 
-	public HighwayInfoKafkaMessage(MassachusettsHighway highway, float speed) {
+	public HighwayInfoKafkaMessage(MassachusettsHighway highway, double speed) {
 		super();
 		this.highway = highway;
 		this.speed = speed;
@@ -22,13 +22,13 @@ public class HighwayInfoKafkaMessage implements Serializable, Comparable<Highway
 
 	private MassachusettsHighway highway;
 
-	private float speed;
+	private double speed;
 
-	public float getSpeed() {
+	public double getSpeed() {
 		return speed;
 	}
 
-	public void setSpeed(float speed) {
+	public void setSpeed(double speed) {
 		this.speed = speed;
 	}
 
